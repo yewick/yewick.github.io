@@ -5,8 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="未命名模式与未命名变量用下划线代替不会被使用的名字，让模式解构和局部变量声明更直接，同时避免无意义的命名与未使用警告。">
   <title>未命名模式与变量 | JDK 21 新特性</title>
+  <script>
+    (() => {
+      const saved = localStorage.getItem("yewick-theme");
+      const preferred = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = saved || preferred;
+    })();
+  </script>
   <link rel="stylesheet" href="../../../assets/css/site.css">
   <link rel="stylesheet" href="../../../assets/css/course.css">
+  <link rel="stylesheet" href="../../../assets/css/chirpy.css">
   <script src="../../../assets/js/site.js" defer></script>
 </head>
 <body>

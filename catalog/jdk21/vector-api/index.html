@@ -5,8 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Vector API 让 Java 代码用 Vector 类型描述批量元素运算，运行时再映射到可用硬件指令。它是性能实验 API，而不是普通集合替代品。">
   <title>Vector API | JDK 21 新特性</title>
+  <script>
+    (() => {
+      const saved = localStorage.getItem("yewick-theme");
+      const preferred = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = saved || preferred;
+    })();
+  </script>
   <link rel="stylesheet" href="../../../assets/css/site.css">
   <link rel="stylesheet" href="../../../assets/css/course.css">
+  <link rel="stylesheet" href="../../../assets/css/chirpy.css">
   <script src="../../../assets/js/site.js" defer></script>
 </head>
 <body>

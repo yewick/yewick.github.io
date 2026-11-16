@@ -5,8 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="JDK 21 开始，当 Java Agent 在运行时被动态加载，JVM 会发出警告。这个准备性变化为未来默认禁止动态挂载、提升启动完整性做准备。">
   <title>动态加载 Java Agent | JDK 21 新特性</title>
+  <script>
+    (() => {
+      const saved = localStorage.getItem("yewick-theme");
+      const preferred = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = saved || preferred;
+    })();
+  </script>
   <link rel="stylesheet" href="../../../assets/css/site.css">
   <link rel="stylesheet" href="../../../assets/css/course.css">
+  <link rel="stylesheet" href="../../../assets/css/chirpy.css">
   <script src="../../../assets/js/site.js" defer></script>
 </head>
 <body>

@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="结合 JDK 21 官方文档与 JEP 444 的虚拟线程中文教学页面。">
   <title>虚拟线程 | JDK 21 新特性</title>
+  <script>
+    (() => {
+      const saved = localStorage.getItem("yewick-theme");
+      const preferred = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = saved || preferred;
+    })();
+  </script>
   <style>
     :root {
       --ink: #142033;
@@ -2921,6 +2928,8 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="../../../assets/css/chirpy.css">
+  <script src="../../../assets/js/site.js" defer></script>
 </head>
 <body>
   <div class="reading-progress" id="readingProgress" aria-hidden="true"></div>
@@ -3252,6 +3261,23 @@
                 <div class="carrier-block">platform-4</div>
               </div>
             </div>
+
+            <div class="mermaid">
+flowchart LR
+    A[任务提交] --> B[挂载到载体线程]
+    B --> C{遇到可卸载的阻塞 I/O?}
+    C -- 是 --> D[卸载虚拟线程]
+    D --> E[等待 I/O 完成]
+    E --> F[重新进入调度队列]
+    C -- 否 --> G[继续使用 CPU]
+    G --> H[任务完成]
+            </div>
+
+            <p>
+              并发承载能力也可以用 Little's Law 表示：稳定系统中，同时在处理的任务数
+              等于任务到达速率乘以平均处理时间。
+            </p>
+            <div class="math-block" data-math="N = \lambda \times W"></div>
 
             <div class="callout warning">
               <p><strong>最容易理解错的一点：</strong>虚拟线程不是“执行更快的线程”。CPU 密集型任务增加线程数不会突破核心数量。它主要提升大量并发任务、且任务经常等待 I/O 时的吞吐量。</p>
