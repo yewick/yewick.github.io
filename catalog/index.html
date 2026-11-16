@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Yewick Notes 技术 Catalog。">
+  <title>Catalog | Yewick Notes</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="site-brand" href="../" aria-label="Yewick Notes 首页">
+        <span class="site-brand-mark">Y</span>
+        <span class="site-brand-copy">
+          <strong>YEWICK NOTES</strong>
+          <span>ENGINEERING JOURNAL</span>
+        </span>
+      </a>
+      <nav class="site-nav" aria-label="主导航">
+        <a href="../">首页</a>
+        <a class="active" href="./">Catalog</a>
+        <a class="nav-pill" href="./jdk21/">JDK 21</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="site-main">
+    <div class="breadcrumb-line"><a href="../">YEWICK NOTES</a><span>/</span><span>CATALOG</span></div>
+    <section class="catalog-header">
+      <div>
+        <span class="catalog-kicker">KNOWLEDGE INDEX · 01</span>
+        <h1>Catalog</h1>
+      </div>
+      <p>技术文档按长期演进的知识分支组织。每一级目录都是一条独立学习路线，而不是一次性文章列表。</p>
+    </section>
+
+    <section class="catalog-summary" data-reveal>
+      <div><strong>01</strong><span>当前主分支</span></div>
+      <div><strong>15</strong><span>JDK 21 JEP 教程</span></div>
+      <div><strong>15 / 15</strong><span>JDK 21 页面完成度</span></div>
+    </section>
+
+    <section class="catalog-branches" aria-labelledby="javaBranchTitle">
+      <a class="branch-card featured" href="./jdk21/" data-reveal>
+        <span class="branch-label">JAVA / LANGUAGE / RUNTIME</span>
+        <h3 id="javaBranchTitle">JDK 21<br>新特性完整手册</h3>
+        <p>以官方 JDK 21 Release 与 JEP 文档为基准，覆盖语言、并发、集合、GC、互操作与平台能力。每章包含学习目标、代码示例、边界说明和官方资料入口。</p>
+        <div class="branch-meta">
+          <div class="branch-tags">
+            <span>15 CHAPTERS</span>
+            <span>LTS</span>
+            <span>JAVA 21</span>
+          </div>
+          <span class="branch-arrow" aria-hidden="true">→</span>
+        </div>
+      </a>
+      <a class="branch-card quiet" href="./jdk21/virtualthread/" data-reveal>
+        <span class="branch-label">START HERE</span>
+        <h3>虚拟线程</h3>
+        <p>本分支的第一篇深度教程，也是理解 JDK 21 并发演进的最佳入口。</p>
+        <div class="branch-meta">
+          <div class="branch-tags"><span>JEP 444</span><span>FINAL</span></div>
+          <span class="branch-arrow" aria-hidden="true">→</span>
+        </div>
+      </a>
+    </section>
+
+    <section class="home-section" aria-labelledby="structureTitle">
+      <div class="section-heading">
+        <div>
+          <span class="section-heading-kicker">HOW TO READ</span>
+          <h2 id="structureTitle">从总览进入章节，从章节回到知识图谱。</h2>
+        </div>
+        <p>每个章节都有独立 URL，便于索引、分享和后续扩展。</p>
+      </div>
+      <div class="recent-list" data-reveal>
+        <a class="recent-item" href="./jdk21/">
+          <span class="date">BRANCH</span>
+          <div><strong>JDK 21 特性地图</strong><span>查看 15 个 JEP 的分类、状态与推荐学习顺序。</span></div>
+          <span class="type">HUB</span>
+        </a>
+        <a class="recent-item" href="./jdk21/virtualthread/">
+          <span class="date">CHAPTER</span>
+          <div><strong>虚拟线程：完整教学页</strong><span>含交互调度、生产示例、诊断方式与课堂检测。</span></div>
+          <span class="type">READ</span>
+        </a>
+        <a class="recent-item" href="../">
+          <span class="date">ROOT</span>
+          <div><strong>返回博客首页</strong><span>查看最近更新和博客导览。</span></div>
+          <span class="type">HOME</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <span>Yewick Notes · Catalog</span>
+      <span><a href="../">首页</a> · <a href="./jdk21/">JDK 21</a></span>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="switch 现在可以使用类型模式、记录模式和守卫条件 when。对于 sealed 类型，编译器还能检查分支是否穷尽。">
+  <title>switch 模式匹配 | JDK 21 新特性</title>
+  <link rel="stylesheet" href="../../../assets/css/site.css">
+  <link rel="stylesheet" href="../../../assets/css/course.css">
+  <script src="../../../assets/js/site.js" defer></script>
+</head>
+<body>
+  <div class="reading-progress" aria-hidden="true"></div>
+  <div class="course-menu-scrim" aria-hidden="true"></div>
+
+  <div class="course-shell">
+    <aside class="course-sidebar" aria-label="JDK 21 课程导航">
+      <a class="course-brand" href="../../../">
+        <span class="course-brand-mark">21</span>
+        <span class="course-brand-copy"><strong>JDK 新特性实战手册</strong><span>YEWICK NOTES · CATALOG</span></span>
+      </a>
+      <div class="course-branch">
+        <small>CATALOG / JAVA</small>
+        <strong>JDK 21 · 15 JEPs</strong>
+        <a href="../">查看完整特性地图 →</a>
+      </div>
+      <p class="course-nav-caption">COURSE INDEX</p>
+      <nav class="course-nav" aria-label="课程章节">
+          <a class="chapter-link" href="../virtualthread/">
+            <span class="number">01</span>
+            <span class="label">虚拟线程</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../string-templates/">
+            <span class="number">02</span>
+            <span class="label">字符串模板</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../sequenced-collections/">
+            <span class="number">03</span>
+            <span class="label">顺序集合</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../generational-zgc/">
+            <span class="number">04</span>
+            <span class="label">分代 ZGC</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../record-patterns/">
+            <span class="number">05</span>
+            <span class="label">记录模式</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link active" href="../pattern-matching-switch/" aria-current="page">
+            <span class="number">06</span>
+            <span class="label">switch 模式匹配</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../foreign-function-memory/">
+            <span class="number">07</span>
+            <span class="label">外部函数与内存 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-patterns/">
+            <span class="number">08</span>
+            <span class="label">未命名模式与变量</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-classes-main-methods/">
+            <span class="number">09</span>
+            <span class="label">未命名类与实例 main 方法</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../scoped-values/">
+            <span class="number">10</span>
+            <span class="label">作用域值</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../vector-api/">
+            <span class="number">11</span>
+            <span class="label">Vector API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../disallow-win32-port/">
+            <span class="number">12</span>
+            <span class="label">弃用 Windows 32 位 x86 端口</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../dynamic-agent-loading/">
+            <span class="number">13</span>
+            <span class="label">动态加载 Java Agent</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../key-encapsulation/">
+            <span class="number">14</span>
+            <span class="label">密钥封装机制 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../structured-concurrency/">
+            <span class="number">15</span>
+            <span class="label">结构化并发</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+      </nav>
+      <div class="course-sidebar-note">
+        <div class="course-progress-card">
+          <small>JDK 21 · LTS RELEASE</small>
+          <strong>从官方文档出发，落到代码与边界。</strong>
+          <div class="progress-track"><span></span></div>
+          <div class="progress-label"><span>COURSE ATLAS</span><span>15 / 15</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="course-main">
+      <div class="course-topbar">
+        <div class="course-breadcrumbs">
+          <button class="course-menu-toggle" type="button" aria-label="打开课程导航" aria-expanded="false"><span aria-hidden="true"></span></button>
+          <a href="../../../">YEWICK NOTES</a><span>/</span>
+          <a href="../">JDK 21</a><span>/</span>
+          <span class="current">switch 模式匹配</span>
+        </div>
+        <span class="course-topbar-label">CHAPTER 06 / 15</span>
+      </div>
+
+      <article class="course-article">
+        <header class="feature-hero" data-jep="JEP 441">
+          <div class="feature-hero-copy">
+            <div class="feature-kicker">
+              <span class="">FINAL</span>
+              <span>JEP 441</span>
+              <span>模式匹配</span>
+            </div>
+            <h1>switch 模式匹配<em>Pattern Matching for switch</em></h1>
+            <p class="feature-lead">让 switch 按类型、组件和条件表达规则。 <strong>switch 现在可以使用类型模式、记录模式和守卫条件 when。对于 sealed 类型，编译器还能检查分支是否穷尽。</strong></p>
+            <div class="feature-meta">
+              <div><strong>JDK 21</strong><span>RELEASE</span></div>
+              <div><strong>JEP 441</strong><span>SPECIFICATION</span></div>
+              <div><strong>模式匹配</strong><span>CHAPTER</span></div>
+            </div>
+          </div>
+          <div class="feature-hero-visual" aria-label="本章知识路线示意">
+            <div class="feature-visual-bar"><span>chapter.spec</span><i></i><span>FINAL</span></div>
+            <div class="feature-visual-body">
+              <dl class="visual-spec">
+                <dt>JEP</dt><dd>441</dd>
+                <dt>domain</dt><dd>模式匹配</dd>
+                <dt>goal</dt><dd>让 switch 按类型、组件和条件表达规则。</dd>
+              </dl>
+              <div class="visual-rail" aria-hidden="true"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </header>
+
+        <div class="feature-source-note">
+          <span>本章以 OpenJDK JEP 原文与 JDK 21 Release 为依据。</span>
+          <a href="https://openjdk.org/jeps/441" target="_blank" rel="noreferrer">阅读 JEP 441 ↗</a>
+        </div>
+
+        <div class="course-body">
+          <section class="course-objectives" data-reveal aria-labelledby="goals-pattern-matching-switch">
+            <div><small>LEARNING OBJECTIVES</small><strong id="goals-pattern-matching-switch">本章学习目标</strong></div>
+            <ul class="course-goals"><li>用模式分支替代重复的类型判断</li><li>使用 when 添加匹配条件</li><li>理解 sealed 类型与穷尽性检查</li></ul>
+          </section>
+
+          <section class="course-section" id="overview">
+            <div class="course-section-kicker">01 · CONCEPTUAL MODEL</div>
+            <h2 class="course-section-title"><span class="number">01</span>先抓住核心模型</h2>
+            <p class="lead">switch 现在可以使用类型模式、记录模式和守卫条件 when。对于 sealed 类型，编译器还能检查分支是否穷尽。</p>
+            <div class="concept-grid">
+            <article class="concept-card">
+              <small>TYPE</small>
+              <h3>类型模式</h3>
+              <p>每个 case 可绑定具体的运行时类型及其变量。</p>
+            </article>
+            <article class="concept-card">
+              <small>WHEN</small>
+              <h3>守卫条件</h3>
+              <p>类型匹配后再检查附加布尔条件，失败则继续尝试后续分支。</p>
+            </article>
+            <article class="concept-card">
+              <small>SEALED</small>
+              <h3>穷尽性</h3>
+              <p>封闭类型层级让编译器能确认所有可能子类型都被覆盖。</p>
+            </article>
+            </div>
+            <ul class="change-list"><li>case 支持带变量的类型模式。</li><li>case 可与记录模式组合，直接解构数据。</li><li>when 守卫允许更精确的分支选择，sealed 层级支持穷尽性检查。</li>
+            </ul>
+          </section>
+
+          <section class="course-section" id="example">
+            <div class="course-section-kicker">02 · HANDS-ON</div>
+            <h2 class="course-section-title"><span class="number">02</span>按 sealed 形状计算面积</h2>
+            <p>示例保持最小可读，重点是展示这项能力如何使用，以及它与普通 Java 代码的关系。</p>
+            <div class="code-shell">
+              <div class="code-shell-bar">
+                <span class="code-shell-title"><span class="mini-dots" aria-hidden="true"><i></i><i></i><i></i></span>SwitchPatternDemo.java</span>
+                <button class="copy-code" type="button" data-copy>复制代码</button>
+              </div>
+              <pre><code data-lang="java">sealed interface Shape
+    permits Circle, Rectangle {}
+
+record Circle(double radius) implements Shape {}
+record Rectangle(double width, double height)
+    implements Shape {}
+
+public class SwitchPatternDemo {
+    static double area(Shape shape) {
+        return switch (shape) {
+            case Circle(var r) -&gt;
+                Math.PI * r * r;
+            case Rectangle(var w, var h) when w &gt; 0 &amp;&amp; h &gt; 0 -&gt;
+                w * h;
+            case Rectangle ignored -&gt;
+                throw new IllegalArgumentException("尺寸必须为正");
+        };
+    }
+
+    public static void main(String[] args) {
+        System.out.println(area(new Circle(2)));
+    }
+}</code></pre>
+            </div>
+            
+          <div class="note ">
+            <p><strong>穷尽性是编译期能力：</strong>sealed 类型没有 default 也可以完成穷尽性检查，新增子类型时编译器会提示需要处理的分支。</p>
+          </div>
+          <div class="note warning">
+            <p><strong>模式顺序有语义：</strong>更具体的类型和带 when 的分支通常应放在更宽泛的分支之前。</p>
+          </div>
+          </section>
+
+          <section class="course-section" id="pitfalls">
+            <div class="course-section-kicker">03 · BOUNDARIES</div>
+            <h2 class="course-section-title"><span class="number">03</span>工程中的边界与易错点</h2>
+            <p>能写出示例不代表可以安全迁移。下面两个问题最值得在设计和评审阶段确认。</p>
+            
+          <article class="pitfall-card">
+            <div class="pitfall-number">01<span>WATCH OUT</span></div>
+            <div>
+              <h3>遗漏 domineering 模式</h3>
+              <p>过宽的模式会让后续分支不可达，编译器会拒绝这类 switch。</p>
+            </div>
+          </article>
+          <article class="pitfall-card">
+            <div class="pitfall-number">02<span>WATCH OUT</span></div>
+            <div>
+              <h3>把 null 当普通模式值</h3>
+              <p>null 的匹配规则需要单独理解；必要时使用 case null 明确处理。</p>
+            </div>
+          </article>
+          </section>
+
+          <section class="course-section" id="summary">
+            <div class="course-section-kicker">04 · SUMMARY</div>
+            <h2 class="course-section-title"><span class="number">04</span>本章小结</h2>
+            <div class="summary-panel" data-jep="JEP 441">
+              <small>TAKEAWAYS</small>
+              <h3>让 switch 按类型、组件和条件表达规则。</h3>
+              <ul><li>switch 从值分支升级为规则分支。</li><li>when 让类型匹配再叠加业务条件。</li><li>sealed 与模式匹配共同提供穷尽性检查。</li>
+              </ul>
+            </div>
+            
+          <nav class="chapter-pagination" aria-label="章节翻页">
+            <a class="chapter-page-link" href="../record-patterns/"><small>← PREVIOUS · 05</small><strong>记录模式</strong><span>返回上一章</span></a>
+            <a class="chapter-page-link next" href="../foreign-function-memory/"><small>NEXT · 07 →</small><strong>外部函数与内存 API</strong><span>继续下一章</span></a>
+          </nav>
+            <footer class="course-footer">
+              <span>Yewick Notes · JDK 21 / switch 模式匹配</span>
+              <span><a href="https://openjdk.org/projects/jdk/21/" target="_blank" rel="noreferrer">JDK 21 Project</a> · <a href="../">课程总览</a></span>
+            </footer>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <aside class="course-toc" aria-label="本章目录">
+      <h2>On this page</h2>
+      <nav>
+        <a href="#overview">01 · 核心模型</a>
+        <a href="#example">02 · 可运行示例</a>
+        <a href="#pitfalls">03 · 边界与易错点</a>
+        <a href="#summary">04 · 本章小结</a>
+      </nav>
+      <div class="course-toc-links">官方资料<br><a href="https://openjdk.org/jeps/441" target="_blank" rel="noreferrer">JEP 441</a><br><a href="../">JDK 21 目录</a></div>
+    </aside>
+  </div>
+</body>
+</html>

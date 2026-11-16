@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="JDK 21 的 15 个官方 JEP 教程目录。">
+  <title>JDK 21 特性地图 | Yewick Notes</title>
+  <link rel="stylesheet" href="../../assets/css/site.css">
+  <style>
+    .jdk-hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+      min-height: 390px;
+      overflow: hidden;
+      color: #fff;
+      background:
+        radial-gradient(circle at 85% 15%, rgba(79, 121, 255, 0.48), transparent 24rem),
+        linear-gradient(135deg, #0a1324, #122643 67%, #17386e);
+      border-radius: 24px;
+      box-shadow: var(--site-shadow);
+      isolation: isolate;
+    }
+    .jdk-hero::before {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      opacity: .22;
+      background:
+        linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+      background-size: 38px 38px;
+      mask-image: linear-gradient(90deg, transparent, #000);
+    }
+    .jdk-hero::after {
+      position: absolute;
+      right: -8px;
+      bottom: -95px;
+      z-index: -1;
+      content: "21";
+      color: rgba(255,255,255,.04);
+      font-family: var(--site-serif);
+      font-size: 250px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .jdk-hero-copy { align-self: center; padding: 45px 24px 44px 47px; }
+    .jdk-hero h1 { margin: 8px 0 0; font-size: clamp(42px,5.5vw,68px); line-height: 1.05; letter-spacing: -.055em; }
+    .jdk-hero h1 em { display:block; margin-top:10px; color:#8dacff; font-family:var(--site-serif); font-size:.34em; font-style:normal; font-weight:500; letter-spacing:.01em; line-height:1.45; }
+    .jdk-hero p { max-width:570px; margin:20px 0 0; color:#b4c1d5; font-size:14px; line-height:1.85; }
+    .jdk-hero p strong { color:#fff; }
+    .jdk-overview {
+      align-self: center;
+      margin: 35px 34px 35px 0;
+      padding: 21px;
+      background: rgba(7,14,26,.67);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 15px;
+      backdrop-filter: blur(8px);
+    }
+    .jdk-overview-head { display:flex; justify-content:space-between; color:#8595ae; font-family:var(--site-mono); font-size:8px; letter-spacing:.08em; }
+    .jdk-big-number { margin:24px 0 9px; color:#fff; font-family:var(--site-mono); font-size:58px; font-weight:600; line-height:1; }
+    .jdk-big-number span { color:#7e9dff; font-size:15px; }
+    .jdk-overview-bars { display:grid; gap:9px; margin-top:20px; }
+    .jdk-overview-row { display:grid; grid-template-columns:58px 1fr 20px; align-items:center; gap:8px; color:#9baac1; font-size:8px; }
+    .jdk-overview-row i { height:4px; overflow:hidden; background:rgba(255,255,255,.09); border-radius:999px; }
+    .jdk-overview-row i::after { display:block; width:var(--w); height:100%; content:""; background:linear-gradient(90deg,#6f92ff,#67dfc0); border-radius:inherit; }
+    .jdk-overview-row b { color:#dbe5f6; font-family:var(--site-mono); font-size:8px; font-weight:500; text-align:right; }
+    .jdk-path { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; margin:24px 0 52px; overflow:hidden; background:var(--site-line); border:1px solid var(--site-line); border-radius:12px; }
+    .jdk-path a { min-height:105px; padding:17px; color:var(--site-ink); background:#fff; text-decoration:none; transition:background .15s ease; }
+    .jdk-path a:hover { background:#f8faff; }
+    .jdk-path small { display:block; color:var(--site-accent); font-family:var(--site-mono); font-size:8px; }
+    .jdk-path strong { display:block; margin:9px 0 4px; font-size:12px; }
+    .jdk-path span { color:var(--site-soft); font-size:9px; line-height:1.6; }
+    .jep-catalog { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+    .jep-card {
+      position:relative;
+      display:flex;
+      min-height:215px;
+      flex-direction:column;
+      overflow:hidden;
+      padding:19px;
+      color:var(--site-ink);
+      background:var(--site-paper);
+      border:1px solid var(--site-line);
+      border-radius:13px;
+      text-decoration:none;
+      box-shadow:0 1px 2px rgba(10,19,36,.025);
+      transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .jep-card:hover { border-color:#c7d2e3; box-shadow:var(--site-shadow); transform:translateY(-4px); }
+    .jep-card::after { position:absolute; right:-23px; bottom:-32px; content:attr(data-jep); color:rgba(49,88,232,.045); font-family:var(--site-serif); font-size:90px; font-weight:700; line-height:1; }
+    .jep-card-top { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .jep-id { color:var(--site-accent); font-family:var(--site-mono); font-size:9px; font-weight:700; }
+    .jep-status { padding:3px 6px; color:#17604c; background:var(--site-mint-soft); border-radius:999px; font-family:var(--site-mono); font-size:7px; }
+    .jep-status.preview { color:#815b16; background:#fff4dc; }
+    .jep-status.incubator { color:#7150a7; background:#f4eeff; }
+    .jep-status.platform { color:#526174; background:#eef2f6; }
+    .jep-card h3 { position:relative; z-index:1; margin:20px 0 7px; font-size:16px; line-height:1.4; letter-spacing:-.02em; }
+    .jep-card p { position:relative; z-index:1; margin:0; color:var(--site-soft); font-size:10.5px; line-height:1.7; }
+    .jep-card-foot { position:relative; z-index:1; display:flex; justify-content:space-between; gap:8px; margin-top:auto; padding-top:17px; color:var(--site-faint); font-size:8px; }
+    .jep-card-foot b { color:var(--site-accent); font-weight:700; }
+    .source-panel { display:flex; flex-wrap:wrap; justify-content:space-between; gap:13px; margin-top:24px; padding:18px 20px; color:var(--site-soft); background:#fff; border:1px solid var(--site-line); border-radius:11px; font-size:10px; }
+    .source-panel a { margin-left:12px; }
+    @media (max-width:900px) {
+      .jdk-hero { grid-template-columns:1fr; }
+      .jdk-hero-copy { padding:38px 32px 27px; }
+      .jdk-overview { margin:0 32px 34px; }
+      .jep-catalog { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .jdk-path { grid-template-columns:repeat(2,1fr); }
+    }
+    @media (max-width:640px) {
+      .jdk-hero { border-radius:20px; }
+      .jdk-hero-copy { padding:33px 23px 25px; }
+      .jdk-overview { margin:0 18px 25px; }
+      .jep-catalog { grid-template-columns:1fr; }
+      .jdk-path { grid-template-columns:1fr; }
+      .jep-card { min-height:190px; }
+    }
+  </style>
+  <script src="../../assets/js/site.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="site-brand" href="../../" aria-label="Yewick Notes 首页">
+        <span class="site-brand-mark">Y</span>
+        <span class="site-brand-copy"><strong>YEWICK NOTES</strong><span>ENGINEERING JOURNAL</span></span>
+      </a>
+      <nav class="site-nav" aria-label="主导航">
+        <a href="../../">首页</a>
+        <a class="active" href="../">Catalog</a>
+        <a class="nav-pill" href="./">JDK 21</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="site-main">
+    <div class="breadcrumb-line"><a href="../../">YEWICK NOTES</a><span>/</span><a href="../">CATALOG</a><span>/</span><span>JDK 21</span></div>
+    <section class="jdk-hero">
+      <div class="jdk-hero-copy">
+        <span class="home-eyebrow">Java Platform · Release 21 · LTS</span>
+        <h1>JDK 21 <em>Fifteen features, one coherent platform.</em></h1>
+        <p>这不是一份 API 清单。沿着 <strong>语言表达、集合模型、并发、GC 与平台接口</strong>理解 JDK 21，每一章都从官方 JEP 出发，落到可运行示例与工程边界。</p>
+      </div>
+      <aside class="jdk-overview" aria-label="JDK 21 教程概览">
+        <div class="jdk-overview-head"><span>RELEASE ATLAS</span><span>LTS / 15 JEP</span></div>
+        <div class="jdk-big-number">15<span> / 15</span></div>
+        <div class="jdk-overview-bars">
+          <div class="jdk-overview-row"><span>Language</span><i style="--w:100%"></i><b>5</b></div>
+          <div class="jdk-overview-row"><span>Concurrency</span><i style="--w:60%"></i><b>3</b></div>
+          <div class="jdk-overview-row"><span>Runtime + Platform</span><i style="--w:100%"></i><b>7</b></div>
+        </div>
+      </aside>
+    </section>
+
+    <nav class="jdk-path" aria-label="推荐学习路线">
+      <a href="./virtualthread/"><small>01 · CONCURRENCY</small><strong>虚拟线程</strong><span>先理解任务、线程与载体。</span></a>
+      <a href="./record-patterns/"><small>02 · LANGUAGE</small><strong>数据解构</strong><span>Record Patterns + switch。</span></a>
+      <a href="./sequenced-collections/"><small>03 · COLLECTIONS</small><strong>集合模型</strong><span>统一的顺序访问能力。</span></a>
+      <a href="./generational-zgc/"><small>04 · RUNTIME</small><strong>运行时</strong><span>分代 ZGC 与底层 API。</span></a>
+    </nav>
+
+    <section aria-labelledby="jepTitle">
+      <div class="section-heading">
+        <div>
+          <span class="section-heading-kicker">FULL CHAPTER INDEX</span>
+          <h2 id="jepTitle">JDK 21 全部 JEP</h2>
+        </div>
+        <p>状态严格按 JDK 21：正式、预览、孵化与平台迁移项分开理解。</p>
+      </div>
+      <div class="jep-catalog">
+        <a class="jep-card" data-jep="JEP 430" href="./string-templates/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 430</span><span class="jep-status preview">PREVIEW</span></div><h3>String Templates</h3><p>用模板处理器构造可检查、可组合的字符串插值。</p><div class="jep-card-foot"><span>Language · Preview</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 431" href="./sequenced-collections/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 431</span><span class="jep-status">FINAL</span></div><h3>Sequenced Collections</h3><p>在集合层级中正式表达“有明确首尾顺序”的集合。</p><div class="jep-card-foot"><span>Collections · Final</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 439" href="./generational-zgc/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 439</span><span class="jep-status">FINAL</span></div><h3>Generational ZGC</h3><p>将年轻对象与长期存活对象分代回收，兼顾低延迟与分配吞吐。</p><div class="jep-card-foot"><span>Runtime · Final</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 440" href="./record-patterns/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 440</span><span class="jep-status">FINAL</span></div><h3>Record Patterns</h3><p>直接解构记录组件，并用嵌套模式表达数据形状。</p><div class="jep-card-foot"><span>Language · Final</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 441" href="./pattern-matching-switch/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 441</span><span class="jep-status">FINAL</span></div><h3>Pattern Matching for switch</h3><p>在 switch 中匹配类型、记录模式，并用 when 守护条件。</p><div class="jep-card-foot"><span>Language · Final</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 442" href="./foreign-function-memory/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 442</span><span class="jep-status preview">PREVIEW</span></div><h3>Foreign Function &amp; Memory</h3><p>以更安全的 Java API 调用本地函数、访问堆外内存。</p><div class="jep-card-foot"><span>Interop · Preview</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 443" href="./unnamed-patterns/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 443</span><span class="jep-status preview">PREVIEW</span></div><h3>Unnamed Patterns &amp; Variables</h3><p>使用下划线表达“我知道这里有一个值，但无需命名”。</p><div class="jep-card-foot"><span>Language · Preview</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 444" href="./virtualthread/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 444</span><span class="jep-status">FINAL</span></div><h3>Virtual Threads</h3><p>用 M:N 调度承载大量阻塞型任务，恢复简单的线程模型。</p><div class="jep-card-foot"><span>Concurrency · Deep dive</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 445" href="./unnamed-classes-main-methods/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 445</span><span class="jep-status preview">PREVIEW</span></div><h3>Unnamed Classes &amp; Instance Main</h3><p>让单文件 Java 程序更接近脚本式体验。</p><div class="jep-card-foot"><span>Language · Preview</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 446" href="./scoped-values/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 446</span><span class="jep-status preview">PREVIEW</span></div><h3>Scoped Values</h3><p>以不可变、受作用域约束的值代替部分 ThreadLocal 用法。</p><div class="jep-card-foot"><span>Concurrency · Preview</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 448" href="./vector-api/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 448</span><span class="jep-status incubator">INCUBATOR</span></div><h3>Vector API</h3><p>用可移植向量运算表达数据并行，并交给运行时映射到硬件。</p><div class="jep-card-foot"><span>Performance · Incubator</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 449" href="./disallow-win32-port/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 449</span><span class="jep-status platform">PLATFORM</span></div><h3>Deprecate Windows 32-bit x86</h3><p>标记旧平台移植版，为后续移除和构建维护减负。</p><div class="jep-card-foot"><span>Platform · Deprecation</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 451" href="./dynamic-agent-loading/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 451</span><span class="jep-status platform">PREPARE</span></div><h3>Dynamic Agent Loading</h3><p>为未来默认禁止运行时动态加载 Java Agent 做准备。</p><div class="jep-card-foot"><span>Platform · Preparation</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 452" href="./key-encapsulation/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 452</span><span class="jep-status">FINAL</span></div><h3>Key Encapsulation Mechanism API</h3><p>为标准 KEM 算法提供统一的封装与解封装接口。</p><div class="jep-card-foot"><span>Security · Final</span><b>开始学习 →</b></div></a>
+        <a class="jep-card" data-jep="JEP 453" href="./structured-concurrency/" data-reveal><div class="jep-card-top"><span class="jep-id">JEP 453</span><span class="jep-status preview">PREVIEW</span></div><h3>Structured Concurrency</h3><p>把一组并发子任务当成一个结构化操作统一管理。</p><div class="jep-card-foot"><span>Concurrency · Preview</span><b>开始学习 →</b></div></a>
+      </div>
+    </section>
+
+    <div class="source-panel">
+      <span>权威依据：OpenJDK JDK 21 Release 与各 JEP 原文。预览、孵化 API 的语义可能随版本变化。</span>
+      <span><a href="https://openjdk.org/projects/jdk/21/" target="_blank" rel="noreferrer">JDK 21 Project</a><a href="https://openjdk.org/jeps/0" target="_blank" rel="noreferrer">JEP Process</a></span>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <span>Yewick Notes · Catalog / Java / JDK 21</span>
+      <span><a href="../">返回 Catalog</a> · <a href="../../">博客首页</a></span>
+    </div>
+  </footer>
+</body>
+</html>

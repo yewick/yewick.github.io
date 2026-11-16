@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Vector API 让 Java 代码用 Vector 类型描述批量元素运算，运行时再映射到可用硬件指令。它是性能实验 API，而不是普通集合替代品。">
+  <title>Vector API | JDK 21 新特性</title>
+  <link rel="stylesheet" href="../../../assets/css/site.css">
+  <link rel="stylesheet" href="../../../assets/css/course.css">
+  <script src="../../../assets/js/site.js" defer></script>
+</head>
+<body>
+  <div class="reading-progress" aria-hidden="true"></div>
+  <div class="course-menu-scrim" aria-hidden="true"></div>
+
+  <div class="course-shell">
+    <aside class="course-sidebar" aria-label="JDK 21 课程导航">
+      <a class="course-brand" href="../../../">
+        <span class="course-brand-mark">21</span>
+        <span class="course-brand-copy"><strong>JDK 新特性实战手册</strong><span>YEWICK NOTES · CATALOG</span></span>
+      </a>
+      <div class="course-branch">
+        <small>CATALOG / JAVA</small>
+        <strong>JDK 21 · 15 JEPs</strong>
+        <a href="../">查看完整特性地图 →</a>
+      </div>
+      <p class="course-nav-caption">COURSE INDEX</p>
+      <nav class="course-nav" aria-label="课程章节">
+          <a class="chapter-link" href="../virtualthread/">
+            <span class="number">01</span>
+            <span class="label">虚拟线程</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../string-templates/">
+            <span class="number">02</span>
+            <span class="label">字符串模板</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../sequenced-collections/">
+            <span class="number">03</span>
+            <span class="label">顺序集合</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../generational-zgc/">
+            <span class="number">04</span>
+            <span class="label">分代 ZGC</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../record-patterns/">
+            <span class="number">05</span>
+            <span class="label">记录模式</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../pattern-matching-switch/">
+            <span class="number">06</span>
+            <span class="label">switch 模式匹配</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../foreign-function-memory/">
+            <span class="number">07</span>
+            <span class="label">外部函数与内存 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-patterns/">
+            <span class="number">08</span>
+            <span class="label">未命名模式与变量</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-classes-main-methods/">
+            <span class="number">09</span>
+            <span class="label">未命名类与实例 main 方法</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../scoped-values/">
+            <span class="number">10</span>
+            <span class="label">作用域值</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link active" href="../vector-api/" aria-current="page">
+            <span class="number">11</span>
+            <span class="label">Vector API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../disallow-win32-port/">
+            <span class="number">12</span>
+            <span class="label">弃用 Windows 32 位 x86 端口</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../dynamic-agent-loading/">
+            <span class="number">13</span>
+            <span class="label">动态加载 Java Agent</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../key-encapsulation/">
+            <span class="number">14</span>
+            <span class="label">密钥封装机制 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../structured-concurrency/">
+            <span class="number">15</span>
+            <span class="label">结构化并发</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+      </nav>
+      <div class="course-sidebar-note">
+        <div class="course-progress-card">
+          <small>JDK 21 · LTS RELEASE</small>
+          <strong>从官方文档出发，落到代码与边界。</strong>
+          <div class="progress-track"><span></span></div>
+          <div class="progress-label"><span>COURSE ATLAS</span><span>15 / 15</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="course-main">
+      <div class="course-topbar">
+        <div class="course-breadcrumbs">
+          <button class="course-menu-toggle" type="button" aria-label="打开课程导航" aria-expanded="false"><span aria-hidden="true"></span></button>
+          <a href="../../../">YEWICK NOTES</a><span>/</span>
+          <a href="../">JDK 21</a><span>/</span>
+          <span class="current">Vector API</span>
+        </div>
+        <span class="course-topbar-label">CHAPTER 11 / 15</span>
+      </div>
+
+      <article class="course-article">
+        <header class="feature-hero" data-jep="JEP 448">
+          <div class="feature-hero-copy">
+            <div class="feature-kicker">
+              <span class="incubator">INCUBATOR</span>
+              <span>JEP 448</span>
+              <span>数据并行</span>
+            </div>
+            <h1>Vector API<em>Vector API</em></h1>
+            <p class="feature-lead">用可移植的向量表达式描述数据并行。 <strong>Vector API 让 Java 代码用 Vector 类型描述批量元素运算，运行时再映射到可用硬件指令。它是性能实验 API，而不是普通集合替代品。</strong></p>
+            <div class="feature-meta">
+              <div><strong>JDK 21</strong><span>RELEASE</span></div>
+              <div><strong>JEP 448</strong><span>SPECIFICATION</span></div>
+              <div><strong>数据并行</strong><span>CHAPTER</span></div>
+            </div>
+          </div>
+          <div class="feature-hero-visual" aria-label="本章知识路线示意">
+            <div class="feature-visual-bar"><span>chapter.spec</span><i></i><span>INCUBATOR</span></div>
+            <div class="feature-visual-body">
+              <dl class="visual-spec">
+                <dt>JEP</dt><dd>448</dd>
+                <dt>domain</dt><dd>数据并行</dd>
+                <dt>goal</dt><dd>用可移植的向量表达式描述数据并行。</dd>
+              </dl>
+              <div class="visual-rail" aria-hidden="true"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </header>
+
+        <div class="feature-source-note">
+          <span>本章以 OpenJDK JEP 原文与 JDK 21 Release 为依据。</span>
+          <a href="https://openjdk.org/jeps/448" target="_blank" rel="noreferrer">阅读 JEP 448 ↗</a>
+        </div>
+
+        <div class="course-body">
+          <section class="course-objectives" data-reveal aria-labelledby="goals-vector-api">
+            <div><small>LEARNING OBJECTIVES</small><strong id="goals-vector-api">本章学习目标</strong></div>
+            <ul class="course-goals"><li>理解 species、lane 与向量运算</li><li>写出只处理整块的向量循环</li><li>为尾部元素保留标量路径</li></ul>
+          </section>
+
+          <section class="course-section" id="overview">
+            <div class="course-section-kicker">01 · CONCEPTUAL MODEL</div>
+            <h2 class="course-section-title"><span class="number">01</span>先抓住核心模型</h2>
+            <p class="lead">Vector API 让 Java 代码用 Vector 类型描述批量元素运算，运行时再映射到可用硬件指令。它是性能实验 API，而不是普通集合替代品。</p>
+            <div class="concept-grid">
+            <article class="concept-card">
+              <small>SPECIES</small>
+              <h3>向量形状</h3>
+              <p>VectorSpecies 描述元素类型、lane 数量与形状。</p>
+            </article>
+            <article class="concept-card">
+              <small>LANE</small>
+              <h3>并行元素</h3>
+              <p>一次运算同时处理多个 lane，最终由运行时映射到硬件。</p>
+            </article>
+            <article class="concept-card">
+              <small>TAIL</small>
+              <h3>尾部处理</h3>
+              <p>数组长度不一定整除向量宽度，剩余元素仍需标量代码。</p>
+            </article>
+            </div>
+            <ul class="change-list"><li>jdk.incubator.vector 提供元素类型专用的向量 API。</li><li>可组合向量运算、掩码和数组加载/存储。</li><li>JDK 21 中是第六轮孵化 API。</li>
+            </ul>
+          </section>
+
+          <section class="course-section" id="example">
+            <div class="course-section-kicker">02 · HANDS-ON</div>
+            <h2 class="course-section-title"><span class="number">02</span>一次计算四个 float 的和</h2>
+            <p>示例保持最小可读，重点是展示这项能力如何使用，以及它与普通 Java 代码的关系。</p>
+            <div class="code-shell">
+              <div class="code-shell-bar">
+                <span class="code-shell-title"><span class="mini-dots" aria-hidden="true"><i></i><i></i><i></i></span>VectorDemo.java</span>
+                <button class="copy-code" type="button" data-copy>复制代码</button>
+              </div>
+              <pre><code data-lang="java">import jdk.incubator.vector.FloatVector;
+import jdk.incubator.vector.VectorSpecies;
+
+public class VectorDemo {
+    static final VectorSpecies&lt;Float&gt; SPECIES =
+        FloatVector.SPECIES_128;
+
+    public static void main(String[] args) {
+        float[] left = {1, 2, 3, 4};
+        float[] right = {10, 20, 30, 40};
+        float[] result = new float[4];
+
+        FloatVector a = FloatVector.fromArray(SPECIES, left, 0);
+        FloatVector b = FloatVector.fromArray(SPECIES, right, 0);
+        a.add(b).intoArray(result, 0);
+
+        System.out.println(java.util.Arrays.toString(result));
+    }
+}</code></pre>
+            </div>
+            
+          <div class="note ">
+            <p><strong>编译与运行：</strong>需要 --enable-preview --release 21，并通过 --add-modules jdk.incubator.vector 引入孵化模块。</p>
+          </div>
+          <div class="note warning">
+            <p><strong>不要先优化再测量：</strong>向量 API 是否产生硬件优势取决于元素类型、数据规模和 JVM 映射；应以基准测试为准。</p>
+          </div>
+          </section>
+
+          <section class="course-section" id="pitfalls">
+            <div class="course-section-kicker">03 · BOUNDARIES</div>
+            <h2 class="course-section-title"><span class="number">03</span>工程中的边界与易错点</h2>
+            <p>能写出示例不代表可以安全迁移。下面两个问题最值得在设计和评审阶段确认。</p>
+            
+          <article class="pitfall-card">
+            <div class="pitfall-number">01<span>WATCH OUT</span></div>
+            <div>
+              <h3>忘记尾部</h3>
+              <p>实际数组长度往往不是 species length 的整数倍，必须处理剩余元素。</p>
+            </div>
+          </article>
+          <article class="pitfall-card">
+            <div class="pitfall-number">02<span>WATCH OUT</span></div>
+            <div>
+              <h3>把孵化和稳定 API 混用</h3>
+              <p>孵化模块的 API 和包路径可能随版本调整，应隔离在性能关键层。</p>
+            </div>
+          </article>
+          </section>
+
+          <section class="course-section" id="summary">
+            <div class="course-section-kicker">04 · SUMMARY</div>
+            <h2 class="course-section-title"><span class="number">04</span>本章小结</h2>
+            <div class="summary-panel" data-jep="JEP 448">
+              <small>TAKEAWAYS</small>
+              <h3>用可移植的向量表达式描述数据并行。</h3>
+              <ul><li>向量 API 描述数据并行，而非线程并行。</li><li>向量形状与尾部处理是核心细节。</li><li>所有收益都必须用基准测试确认。</li>
+              </ul>
+            </div>
+            
+          <nav class="chapter-pagination" aria-label="章节翻页">
+            <a class="chapter-page-link" href="../scoped-values/"><small>← PREVIOUS · 10</small><strong>作用域值</strong><span>返回上一章</span></a>
+            <a class="chapter-page-link next" href="../disallow-win32-port/"><small>NEXT · 12 →</small><strong>弃用 Windows 32 位 x86 端口</strong><span>继续下一章</span></a>
+          </nav>
+            <footer class="course-footer">
+              <span>Yewick Notes · JDK 21 / Vector API</span>
+              <span><a href="https://openjdk.org/projects/jdk/21/" target="_blank" rel="noreferrer">JDK 21 Project</a> · <a href="../">课程总览</a></span>
+            </footer>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <aside class="course-toc" aria-label="本章目录">
+      <h2>On this page</h2>
+      <nav>
+        <a href="#overview">01 · 核心模型</a>
+        <a href="#example">02 · 可运行示例</a>
+        <a href="#pitfalls">03 · 边界与易错点</a>
+        <a href="#summary">04 · 本章小结</a>
+      </nav>
+      <div class="course-toc-links">官方资料<br><a href="https://openjdk.org/jeps/448" target="_blank" rel="noreferrer">JEP 448</a><br><a href="../">JDK 21 目录</a></div>
+    </aside>
+  </div>
+</body>
+</html>

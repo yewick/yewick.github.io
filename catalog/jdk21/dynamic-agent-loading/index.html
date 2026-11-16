@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="JDK 21 开始，当 Java Agent 在运行时被动态加载，JVM 会发出警告。这个准备性变化为未来默认禁止动态挂载、提升启动完整性做准备。">
+  <title>动态加载 Java Agent | JDK 21 新特性</title>
+  <link rel="stylesheet" href="../../../assets/css/site.css">
+  <link rel="stylesheet" href="../../../assets/css/course.css">
+  <script src="../../../assets/js/site.js" defer></script>
+</head>
+<body>
+  <div class="reading-progress" aria-hidden="true"></div>
+  <div class="course-menu-scrim" aria-hidden="true"></div>
+
+  <div class="course-shell">
+    <aside class="course-sidebar" aria-label="JDK 21 课程导航">
+      <a class="course-brand" href="../../../">
+        <span class="course-brand-mark">21</span>
+        <span class="course-brand-copy"><strong>JDK 新特性实战手册</strong><span>YEWICK NOTES · CATALOG</span></span>
+      </a>
+      <div class="course-branch">
+        <small>CATALOG / JAVA</small>
+        <strong>JDK 21 · 15 JEPs</strong>
+        <a href="../">查看完整特性地图 →</a>
+      </div>
+      <p class="course-nav-caption">COURSE INDEX</p>
+      <nav class="course-nav" aria-label="课程章节">
+          <a class="chapter-link" href="../virtualthread/">
+            <span class="number">01</span>
+            <span class="label">虚拟线程</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../string-templates/">
+            <span class="number">02</span>
+            <span class="label">字符串模板</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../sequenced-collections/">
+            <span class="number">03</span>
+            <span class="label">顺序集合</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../generational-zgc/">
+            <span class="number">04</span>
+            <span class="label">分代 ZGC</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../record-patterns/">
+            <span class="number">05</span>
+            <span class="label">记录模式</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../pattern-matching-switch/">
+            <span class="number">06</span>
+            <span class="label">switch 模式匹配</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../foreign-function-memory/">
+            <span class="number">07</span>
+            <span class="label">外部函数与内存 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-patterns/">
+            <span class="number">08</span>
+            <span class="label">未命名模式与变量</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-classes-main-methods/">
+            <span class="number">09</span>
+            <span class="label">未命名类与实例 main 方法</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../scoped-values/">
+            <span class="number">10</span>
+            <span class="label">作用域值</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../vector-api/">
+            <span class="number">11</span>
+            <span class="label">Vector API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../disallow-win32-port/">
+            <span class="number">12</span>
+            <span class="label">弃用 Windows 32 位 x86 端口</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link active" href="../dynamic-agent-loading/" aria-current="page">
+            <span class="number">13</span>
+            <span class="label">动态加载 Java Agent</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../key-encapsulation/">
+            <span class="number">14</span>
+            <span class="label">密钥封装机制 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../structured-concurrency/">
+            <span class="number">15</span>
+            <span class="label">结构化并发</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+      </nav>
+      <div class="course-sidebar-note">
+        <div class="course-progress-card">
+          <small>JDK 21 · LTS RELEASE</small>
+          <strong>从官方文档出发，落到代码与边界。</strong>
+          <div class="progress-track"><span></span></div>
+          <div class="progress-label"><span>COURSE ATLAS</span><span>15 / 15</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="course-main">
+      <div class="course-topbar">
+        <div class="course-breadcrumbs">
+          <button class="course-menu-toggle" type="button" aria-label="打开课程导航" aria-expanded="false"><span aria-hidden="true"></span></button>
+          <a href="../../../">YEWICK NOTES</a><span>/</span>
+          <a href="../">JDK 21</a><span>/</span>
+          <span class="current">动态加载 Java Agent</span>
+        </div>
+        <span class="course-topbar-label">CHAPTER 13 / 15</span>
+      </div>
+
+      <article class="course-article">
+        <header class="feature-hero" data-jep="JEP 451">
+          <div class="feature-hero-copy">
+            <div class="feature-kicker">
+              <span class="platform">PREPARE</span>
+              <span>JEP 451</span>
+              <span>平台治理</span>
+            </div>
+            <h1>动态加载 Java Agent<em>Prepare to Disallow Dynamic Loading of Agents</em></h1>
+            <p class="feature-lead">让运行时动态挂载 Agent 从默认行为变成显式选择。 <strong>JDK 21 开始，当 Java Agent 在运行时被动态加载，JVM 会发出警告。这个准备性变化为未来默认禁止动态挂载、提升启动完整性做准备。</strong></p>
+            <div class="feature-meta">
+              <div><strong>JDK 21</strong><span>RELEASE</span></div>
+              <div><strong>JEP 451</strong><span>SPECIFICATION</span></div>
+              <div><strong>平台治理</strong><span>CHAPTER</span></div>
+            </div>
+          </div>
+          <div class="feature-hero-visual" aria-label="本章知识路线示意">
+            <div class="feature-visual-bar"><span>chapter.spec</span><i></i><span>PREPARE</span></div>
+            <div class="feature-visual-body">
+              <dl class="visual-spec">
+                <dt>JEP</dt><dd>451</dd>
+                <dt>domain</dt><dd>平台治理</dd>
+                <dt>goal</dt><dd>让运行时动态挂载 Agent 从默认行为变成显式选择。</dd>
+              </dl>
+              <div class="visual-rail" aria-hidden="true"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </header>
+
+        <div class="feature-source-note">
+          <span>本章以 OpenJDK JEP 原文与 JDK 21 Release 为依据。</span>
+          <a href="https://openjdk.org/jeps/451" target="_blank" rel="noreferrer">阅读 JEP 451 ↗</a>
+        </div>
+
+        <div class="course-body">
+          <section class="course-objectives" data-reveal aria-labelledby="goals-dynamic-agent-loading">
+            <div><small>LEARNING OBJECTIVES</small><strong id="goals-dynamic-agent-loading">本章学习目标</strong></div>
+            <ul class="course-goals"><li>理解启动加载与动态加载的区别</li><li>识别警告来源</li><li>区分监控工具和无意集成</li></ul>
+          </section>
+
+          <section class="course-section" id="overview">
+            <div class="course-section-kicker">01 · CONCEPTUAL MODEL</div>
+            <h2 class="course-section-title"><span class="number">01</span>先抓住核心模型</h2>
+            <p class="lead">JDK 21 开始，当 Java Agent 在运行时被动态加载，JVM 会发出警告。这个准备性变化为未来默认禁止动态挂载、提升启动完整性做准备。</p>
+            <div class="concept-grid">
+            <article class="concept-card">
+              <small>STARTUP</small>
+              <h3>启动时加载</h3>
+              <p>通过 -javaagent 在 JVM 启动阶段加载，行为更可预测。</p>
+            </article>
+            <article class="concept-card">
+              <small>DYNAMIC</small>
+              <h3>动态挂载</h3>
+              <p>程序启动后通过 Attach API 等机制挂载 Agent。</p>
+            </article>
+            <article class="concept-card">
+              <small>WARNING</small>
+              <h3>显式选择</h3>
+              <p>JDK 21 用警告提示未来治理方向，并允许临时显式放行。</p>
+            </article>
+            </div>
+            <ul class="change-list"><li>运行时动态加载 Agent 时 JVM 输出 warning。</li><li>可临时使用 -XX:+EnableDynamicAgentLoading 显式允许。</li><li>启动时通过 -javaagent 配置的 Agent 不触发该动态加载警告。</li>
+            </ul>
+          </section>
+
+          <section class="course-section" id="example">
+            <div class="course-section-kicker">02 · HANDS-ON</div>
+            <h2 class="course-section-title"><span class="number">02</span>识别并显式选择</h2>
+            <p>示例保持最小可读，重点是展示这项能力如何使用，以及它与普通 Java 代码的关系。</p>
+            <div class="code-shell">
+              <div class="code-shell-bar">
+                <span class="code-shell-title"><span class="mini-dots" aria-hidden="true"><i></i><i></i><i></i></span>agent-policy.sh</span>
+                <button class="copy-code" type="button" data-copy>复制代码</button>
+              </div>
+              <pre><code data-lang="bash"># JDK 21 可能输出：
+# WARNING: A Java agent has been loaded dynamically
+
+# 仅为兼容既有工具时显式放行
+java -XX:+EnableDynamicAgentLoading \
+     -jar application.jar</code></pre>
+            </div>
+            
+          <div class="note ">
+            <p><strong>先确认是谁在挂载：</strong>警告可能来自 APM、调试、热部署或测试工具；先定位来源再讨论策略。</p>
+          </div>
+          <div class="note warning">
+            <p><strong>显式放行不是长期默认方案：</strong>该开关用于迁移期兼容，不应无脑加入所有生产启动脚本。</p>
+          </div>
+          </section>
+
+          <section class="course-section" id="pitfalls">
+            <div class="course-section-kicker">03 · BOUNDARIES</div>
+            <h2 class="course-section-title"><span class="number">03</span>工程中的边界与易错点</h2>
+            <p>能写出示例不代表可以安全迁移。下面两个问题最值得在设计和评审阶段确认。</p>
+            
+          <article class="pitfall-card">
+            <div class="pitfall-number">01<span>WATCH OUT</span></div>
+            <div>
+              <h3>误以为 Agent 已不可用</h3>
+              <p>JDK 21 主要是警告和准备性变化，并未立即默认禁止。</p>
+            </div>
+          </article>
+          <article class="pitfall-card">
+            <div class="pitfall-number">02<span>WATCH OUT</span></div>
+            <div>
+              <h3>忽略供应链风险</h3>
+              <p>动态 Agent 能修改字节码和运行时行为，需要受控来源和审计。</p>
+            </div>
+          </article>
+          </section>
+
+          <section class="course-section" id="summary">
+            <div class="course-section-kicker">04 · SUMMARY</div>
+            <h2 class="course-section-title"><span class="number">04</span>本章小结</h2>
+            <div class="summary-panel" data-jep="JEP 451">
+              <small>TAKEAWAYS</small>
+              <h3>让运行时动态挂载 Agent 从默认行为变成显式选择。</h3>
+              <ul><li>动态 Agent 加载正在变成需要显式声明的行为。</li><li>启动加载比运行时挂载更容易审计。</li><li>迁移期开关应只为可识别工具保留。</li>
+              </ul>
+            </div>
+            
+          <nav class="chapter-pagination" aria-label="章节翻页">
+            <a class="chapter-page-link" href="../disallow-win32-port/"><small>← PREVIOUS · 12</small><strong>弃用 Windows 32 位 x86 端口</strong><span>返回上一章</span></a>
+            <a class="chapter-page-link next" href="../key-encapsulation/"><small>NEXT · 14 →</small><strong>密钥封装机制 API</strong><span>继续下一章</span></a>
+          </nav>
+            <footer class="course-footer">
+              <span>Yewick Notes · JDK 21 / 动态加载 Java Agent</span>
+              <span><a href="https://openjdk.org/projects/jdk/21/" target="_blank" rel="noreferrer">JDK 21 Project</a> · <a href="../">课程总览</a></span>
+            </footer>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <aside class="course-toc" aria-label="本章目录">
+      <h2>On this page</h2>
+      <nav>
+        <a href="#overview">01 · 核心模型</a>
+        <a href="#example">02 · 可运行示例</a>
+        <a href="#pitfalls">03 · 边界与易错点</a>
+        <a href="#summary">04 · 本章小结</a>
+      </nav>
+      <div class="course-toc-links">官方资料<br><a href="https://openjdk.org/jeps/451" target="_blank" rel="noreferrer">JEP 451</a><br><a href="../">JDK 21 目录</a></div>
+    </aside>
+  </div>
+</body>
+</html>

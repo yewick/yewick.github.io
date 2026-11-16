@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="JDK 21 将 Windows 32 位 x86 端口标记为 deprecated for removal。这个 JEP 不改变主流 64 位 Windows、Linux 或 macOS 平台的 Java 运行方式。">
+  <title>弃用 Windows 32 位 x86 端口 | JDK 21 新特性</title>
+  <link rel="stylesheet" href="../../../assets/css/site.css">
+  <link rel="stylesheet" href="../../../assets/css/course.css">
+  <script src="../../../assets/js/site.js" defer></script>
+</head>
+<body>
+  <div class="reading-progress" aria-hidden="true"></div>
+  <div class="course-menu-scrim" aria-hidden="true"></div>
+
+  <div class="course-shell">
+    <aside class="course-sidebar" aria-label="JDK 21 课程导航">
+      <a class="course-brand" href="../../../">
+        <span class="course-brand-mark">21</span>
+        <span class="course-brand-copy"><strong>JDK 新特性实战手册</strong><span>YEWICK NOTES · CATALOG</span></span>
+      </a>
+      <div class="course-branch">
+        <small>CATALOG / JAVA</small>
+        <strong>JDK 21 · 15 JEPs</strong>
+        <a href="../">查看完整特性地图 →</a>
+      </div>
+      <p class="course-nav-caption">COURSE INDEX</p>
+      <nav class="course-nav" aria-label="课程章节">
+          <a class="chapter-link" href="../virtualthread/">
+            <span class="number">01</span>
+            <span class="label">虚拟线程</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../string-templates/">
+            <span class="number">02</span>
+            <span class="label">字符串模板</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../sequenced-collections/">
+            <span class="number">03</span>
+            <span class="label">顺序集合</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../generational-zgc/">
+            <span class="number">04</span>
+            <span class="label">分代 ZGC</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../record-patterns/">
+            <span class="number">05</span>
+            <span class="label">记录模式</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../pattern-matching-switch/">
+            <span class="number">06</span>
+            <span class="label">switch 模式匹配</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../foreign-function-memory/">
+            <span class="number">07</span>
+            <span class="label">外部函数与内存 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-patterns/">
+            <span class="number">08</span>
+            <span class="label">未命名模式与变量</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-classes-main-methods/">
+            <span class="number">09</span>
+            <span class="label">未命名类与实例 main 方法</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../scoped-values/">
+            <span class="number">10</span>
+            <span class="label">作用域值</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../vector-api/">
+            <span class="number">11</span>
+            <span class="label">Vector API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link active" href="../disallow-win32-port/" aria-current="page">
+            <span class="number">12</span>
+            <span class="label">弃用 Windows 32 位 x86 端口</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../dynamic-agent-loading/">
+            <span class="number">13</span>
+            <span class="label">动态加载 Java Agent</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../key-encapsulation/">
+            <span class="number">14</span>
+            <span class="label">密钥封装机制 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../structured-concurrency/">
+            <span class="number">15</span>
+            <span class="label">结构化并发</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+      </nav>
+      <div class="course-sidebar-note">
+        <div class="course-progress-card">
+          <small>JDK 21 · LTS RELEASE</small>
+          <strong>从官方文档出发，落到代码与边界。</strong>
+          <div class="progress-track"><span></span></div>
+          <div class="progress-label"><span>COURSE ATLAS</span><span>15 / 15</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="course-main">
+      <div class="course-topbar">
+        <div class="course-breadcrumbs">
+          <button class="course-menu-toggle" type="button" aria-label="打开课程导航" aria-expanded="false"><span aria-hidden="true"></span></button>
+          <a href="../../../">YEWICK NOTES</a><span>/</span>
+          <a href="../">JDK 21</a><span>/</span>
+          <span class="current">弃用 Windows 32 位 x86 端口</span>
+        </div>
+        <span class="course-topbar-label">CHAPTER 12 / 15</span>
+      </div>
+
+      <article class="course-article">
+        <header class="feature-hero" data-jep="JEP 449">
+          <div class="feature-hero-copy">
+            <div class="feature-kicker">
+              <span class="platform">DEPRECATE</span>
+              <span>JEP 449</span>
+              <span>平台迁移</span>
+            </div>
+            <h1>弃用 Windows 32 位 x86 端口<em>Deprecate the Windows 32-bit x86 Port</em></h1>
+            <p class="feature-lead">为移除维护成本高、使用率低的旧平台移植版做准备。 <strong>JDK 21 将 Windows 32 位 x86 端口标记为 deprecated for removal。这个 JEP 不改变主流 64 位 Windows、Linux 或 macOS 平台的 Java 运行方式。</strong></p>
+            <div class="feature-meta">
+              <div><strong>JDK 21</strong><span>RELEASE</span></div>
+              <div><strong>JEP 449</strong><span>SPECIFICATION</span></div>
+              <div><strong>平台迁移</strong><span>CHAPTER</span></div>
+            </div>
+          </div>
+          <div class="feature-hero-visual" aria-label="本章知识路线示意">
+            <div class="feature-visual-bar"><span>chapter.spec</span><i></i><span>DEPRECATE</span></div>
+            <div class="feature-visual-body">
+              <dl class="visual-spec">
+                <dt>JEP</dt><dd>449</dd>
+                <dt>domain</dt><dd>平台迁移</dd>
+                <dt>goal</dt><dd>为移除维护成本高、使用率低的旧平台移植版做准备。</dd>
+              </dl>
+              <div class="visual-rail" aria-hidden="true"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </header>
+
+        <div class="feature-source-note">
+          <span>本章以 OpenJDK JEP 原文与 JDK 21 Release 为依据。</span>
+          <a href="https://openjdk.org/jeps/449" target="_blank" rel="noreferrer">阅读 JEP 449 ↗</a>
+        </div>
+
+        <div class="course-body">
+          <section class="course-objectives" data-reveal aria-labelledby="goals-disallow-win32-port">
+            <div><small>LEARNING OBJECTIVES</small><strong id="goals-disallow-win32-port">本章学习目标</strong></div>
+            <ul class="course-goals"><li>区分 32 位 x86 与主流 64 位平台</li><li>检查构建和部署环境的架构</li><li>为旧平台迁移制定计划</li></ul>
+          </section>
+
+          <section class="course-section" id="overview">
+            <div class="course-section-kicker">01 · CONCEPTUAL MODEL</div>
+            <h2 class="course-section-title"><span class="number">01</span>先抓住核心模型</h2>
+            <p class="lead">JDK 21 将 Windows 32 位 x86 端口标记为 deprecated for removal。这个 JEP 不改变主流 64 位 Windows、Linux 或 macOS 平台的 Java 运行方式。</p>
+            <div class="concept-grid">
+            <article class="concept-card">
+              <small>PORT</small>
+              <h3>平台端口</h3>
+              <p>JDK 的端口与特定 CPU 架构、操作系统 ABI 相关。</p>
+            </article>
+            <article class="concept-card">
+              <small>DEPRECATE</small>
+              <h3>弃用为移除</h3>
+              <p>该标记不会立即删除能力，但意味着后续版本可能不再提供。</p>
+            </article>
+            <article class="concept-card">
+              <small>MIGRATE</small>
+              <h3>迁移排查</h3>
+              <p>检查 CI、桌面客户端、本地库和安装包是否依赖 32 位 JDK。</p>
+            </article>
+            </div>
+            <ul class="change-list"><li>Windows 32 位 x86 端口被标记为 deprecated for removal。</li><li>主流 64 位 Windows x64 与 Arm64 不在本次弃用范围内。</li><li>旧平台用户应尽快验证 64 位运行时和依赖链。</li>
+            </ul>
+          </section>
+
+          <section class="course-section" id="example">
+            <div class="course-section-kicker">02 · HANDS-ON</div>
+            <h2 class="course-section-title"><span class="number">02</span>先确认正在使用的 Java 架构</h2>
+            <p>示例保持最小可读，重点是展示这项能力如何使用，以及它与普通 Java 代码的关系。</p>
+            <div class="code-shell">
+              <div class="code-shell-bar">
+                <span class="code-shell-title"><span class="mini-dots" aria-hidden="true"><i></i><i></i><i></i></span>architecture-check.sh</span>
+                <button class="copy-code" type="button" data-copy>复制代码</button>
+              </div>
+              <pre><code data-lang="bash">java -XshowSettings:properties -version 2&gt;&amp;1 \
+  | grep -E "java.version|os.arch|os.name"
+
+# 常见输出
+# java.version = 21.x
+# os.arch = amd64
+# os.name = Windows 11</code></pre>
+            </div>
+            
+          <div class="note ">
+            <p><strong>不是语言特性：</strong>这是平台维护项，学习重点不在 API，而在构建、发布和依赖扫描。</p>
+          </div>
+          <div class="note warning">
+            <p><strong>本地库可能决定架构：</strong>undefined</p>
+          </div>
+          </section>
+
+          <section class="course-section" id="pitfalls">
+            <div class="course-section-kicker">03 · BOUNDARIES</div>
+            <h2 class="course-section-title"><span class="number">03</span>工程中的边界与易错点</h2>
+            <p>能写出示例不代表可以安全迁移。下面两个问题最值得在设计和评审阶段确认。</p>
+            
+          <article class="pitfall-card">
+            <div class="pitfall-number">01<span>WATCH OUT</span></div>
+            <div>
+              <h3>把 x86 和 x64 视为同一平台</h3>
+              <p>32 位与 64 位进程模型、可用地址空间和本地库 ABI 不同。</p>
+            </div>
+          </article>
+          <article class="pitfall-card">
+            <div class="pitfall-number">02<span>WATCH OUT</span></div>
+            <div>
+              <h3>只检查开发机</h3>
+              <p>还需要检查 CI runner、打包环境和最终用户的运行环境。</p>
+            </div>
+          </article>
+          </section>
+
+          <section class="course-section" id="summary">
+            <div class="course-section-kicker">04 · SUMMARY</div>
+            <h2 class="course-section-title"><span class="number">04</span>本章小结</h2>
+            <div class="summary-panel" data-jep="JEP 449">
+              <small>TAKEAWAYS</small>
+              <h3>为移除维护成本高、使用率低的旧平台移植版做准备。</h3>
+              <ul><li>弃用为移除不等于立刻失效。</li><li>平台迁移首先是依赖链梳理。</li><li>主流 x64 与 Arm64 用户通常不受此项影响。</li>
+              </ul>
+            </div>
+            
+          <nav class="chapter-pagination" aria-label="章节翻页">
+            <a class="chapter-page-link" href="../vector-api/"><small>← PREVIOUS · 11</small><strong>Vector API</strong><span>返回上一章</span></a>
+            <a class="chapter-page-link next" href="../dynamic-agent-loading/"><small>NEXT · 13 →</small><strong>动态加载 Java Agent</strong><span>继续下一章</span></a>
+          </nav>
+            <footer class="course-footer">
+              <span>Yewick Notes · JDK 21 / 弃用 Windows 32 位 x86 端口</span>
+              <span><a href="https://openjdk.org/projects/jdk/21/" target="_blank" rel="noreferrer">JDK 21 Project</a> · <a href="../">课程总览</a></span>
+            </footer>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <aside class="course-toc" aria-label="本章目录">
+      <h2>On this page</h2>
+      <nav>
+        <a href="#overview">01 · 核心模型</a>
+        <a href="#example">02 · 可运行示例</a>
+        <a href="#pitfalls">03 · 边界与易错点</a>
+        <a href="#summary">04 · 本章小结</a>
+      </nav>
+      <div class="course-toc-links">官方资料<br><a href="https://openjdk.org/jeps/449" target="_blank" rel="noreferrer">JEP 449</a><br><a href="../">JDK 21 目录</a></div>
+    </aside>
+  </div>
+</body>
+</html>

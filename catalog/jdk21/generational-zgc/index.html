@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="JDK 21 的分代 ZGC 将堆区分为年轻代与老年代，分别执行回收。它延续并发、低暂停的设计，同时更适配大多数对象很快死亡的分配模式。">
+  <title>分代 ZGC | JDK 21 新特性</title>
+  <link rel="stylesheet" href="../../../assets/css/site.css">
+  <link rel="stylesheet" href="../../../assets/css/course.css">
+  <script src="../../../assets/js/site.js" defer></script>
+</head>
+<body>
+  <div class="reading-progress" aria-hidden="true"></div>
+  <div class="course-menu-scrim" aria-hidden="true"></div>
+
+  <div class="course-shell">
+    <aside class="course-sidebar" aria-label="JDK 21 课程导航">
+      <a class="course-brand" href="../../../">
+        <span class="course-brand-mark">21</span>
+        <span class="course-brand-copy"><strong>JDK 新特性实战手册</strong><span>YEWICK NOTES · CATALOG</span></span>
+      </a>
+      <div class="course-branch">
+        <small>CATALOG / JAVA</small>
+        <strong>JDK 21 · 15 JEPs</strong>
+        <a href="../">查看完整特性地图 →</a>
+      </div>
+      <p class="course-nav-caption">COURSE INDEX</p>
+      <nav class="course-nav" aria-label="课程章节">
+          <a class="chapter-link" href="../virtualthread/">
+            <span class="number">01</span>
+            <span class="label">虚拟线程</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../string-templates/">
+            <span class="number">02</span>
+            <span class="label">字符串模板</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../sequenced-collections/">
+            <span class="number">03</span>
+            <span class="label">顺序集合</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link active" href="../generational-zgc/" aria-current="page">
+            <span class="number">04</span>
+            <span class="label">分代 ZGC</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../record-patterns/">
+            <span class="number">05</span>
+            <span class="label">记录模式</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../pattern-matching-switch/">
+            <span class="number">06</span>
+            <span class="label">switch 模式匹配</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../foreign-function-memory/">
+            <span class="number">07</span>
+            <span class="label">外部函数与内存 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-patterns/">
+            <span class="number">08</span>
+            <span class="label">未命名模式与变量</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-classes-main-methods/">
+            <span class="number">09</span>
+            <span class="label">未命名类与实例 main 方法</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../scoped-values/">
+            <span class="number">10</span>
+            <span class="label">作用域值</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../vector-api/">
+            <span class="number">11</span>
+            <span class="label">Vector API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../disallow-win32-port/">
+            <span class="number">12</span>
+            <span class="label">弃用 Windows 32 位 x86 端口</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../dynamic-agent-loading/">
+            <span class="number">13</span>
+            <span class="label">动态加载 Java Agent</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../key-encapsulation/">
+            <span class="number">14</span>
+            <span class="label">密钥封装机制 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../structured-concurrency/">
+            <span class="number">15</span>
+            <span class="label">结构化并发</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+      </nav>
+      <div class="course-sidebar-note">
+        <div class="course-progress-card">
+          <small>JDK 21 · LTS RELEASE</small>
+          <strong>从官方文档出发，落到代码与边界。</strong>
+          <div class="progress-track"><span></span></div>
+          <div class="progress-label"><span>COURSE ATLAS</span><span>15 / 15</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="course-main">
+      <div class="course-topbar">
+        <div class="course-breadcrumbs">
+          <button class="course-menu-toggle" type="button" aria-label="打开课程导航" aria-expanded="false"><span aria-hidden="true"></span></button>
+          <a href="../../../">YEWICK NOTES</a><span>/</span>
+          <a href="../">JDK 21</a><span>/</span>
+          <span class="current">分代 ZGC</span>
+        </div>
+        <span class="course-topbar-label">CHAPTER 04 / 15</span>
+      </div>
+
+      <article class="course-article">
+        <header class="feature-hero" data-jep="JEP 439">
+          <div class="feature-hero-copy">
+            <div class="feature-kicker">
+              <span class="">FINAL</span>
+              <span>JEP 439</span>
+              <span>垃圾回收</span>
+            </div>
+            <h1>分代 ZGC<em>Generational ZGC</em></h1>
+            <p class="feature-lead">在低暂停目标下，利用分代假设提高分配友好度。 <strong>JDK 21 的分代 ZGC 将堆区分为年轻代与老年代，分别执行回收。它延续并发、低暂停的设计，同时更适配大多数对象很快死亡的分配模式。</strong></p>
+            <div class="feature-meta">
+              <div><strong>JDK 21</strong><span>RELEASE</span></div>
+              <div><strong>JEP 439</strong><span>SPECIFICATION</span></div>
+              <div><strong>垃圾回收</strong><span>CHAPTER</span></div>
+            </div>
+          </div>
+          <div class="feature-hero-visual" aria-label="本章知识路线示意">
+            <div class="feature-visual-bar"><span>chapter.spec</span><i></i><span>FINAL</span></div>
+            <div class="feature-visual-body">
+              <dl class="visual-spec">
+                <dt>JEP</dt><dd>439</dd>
+                <dt>domain</dt><dd>垃圾回收</dd>
+                <dt>goal</dt><dd>在低暂停目标下，利用分代假设提高分配友好度。</dd>
+              </dl>
+              <div class="visual-rail" aria-hidden="true"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </header>
+
+        <div class="feature-source-note">
+          <span>本章以 OpenJDK JEP 原文与 JDK 21 Release 为依据。</span>
+          <a href="https://openjdk.org/jeps/439" target="_blank" rel="noreferrer">阅读 JEP 439 ↗</a>
+        </div>
+
+        <div class="course-body">
+          <section class="course-objectives" data-reveal aria-labelledby="goals-generational-zgc">
+            <div><small>LEARNING OBJECTIVES</small><strong id="goals-generational-zgc">本章学习目标</strong></div>
+            <ul class="course-goals"><li>理解年轻代与老年代的回收差异</li><li>掌握 JDK 21 的启用参数</li><li>用暂停、吞吐和 CPU 成本评估收益</li></ul>
+          </section>
+
+          <section class="course-section" id="overview">
+            <div class="course-section-kicker">01 · CONCEPTUAL MODEL</div>
+            <h2 class="course-section-title"><span class="number">01</span>先抓住核心模型</h2>
+            <p class="lead">JDK 21 的分代 ZGC 将堆区分为年轻代与老年代，分别执行回收。它延续并发、低暂停的设计，同时更适配大多数对象很快死亡的分配模式。</p>
+            <div class="concept-grid">
+            <article class="concept-card">
+              <small>YOUNG</small>
+              <h3>年轻代</h3>
+              <p>频繁回收生命周期短的对象，降低整体复制与扫描成本。</p>
+            </article>
+            <article class="concept-card">
+              <small>OLD</small>
+              <h3>老年代</h3>
+              <p>承载长期存活对象，回收频率通常更低。</p>
+            </article>
+            <article class="concept-card">
+              <small>PAUSE</small>
+              <h3>低暂停</h3>
+              <p>分代并不放弃 ZGC 的低延迟目标，仍需按真实负载观察。</p>
+            </article>
+            </div>
+            <ul class="change-list"><li>ZGC 支持年轻代与老年代两套回收策略。</li><li>JDK 21 中通过 -XX:+ZGenerational 启用分代模式。</li><li>默认并启用 ZGC 时，JDK 21 仍要求显式开启分代选项。</li>
+            </ul>
+          </section>
+
+          <section class="course-section" id="example">
+            <div class="course-section-kicker">02 · HANDS-ON</div>
+            <h2 class="course-section-title"><span class="number">02</span>用分代 ZGC 启动应用</h2>
+            <p>示例保持最小可读，重点是展示这项能力如何使用，以及它与普通 Java 代码的关系。</p>
+            <div class="code-shell">
+              <div class="code-shell-bar">
+                <span class="code-shell-title"><span class="mini-dots" aria-hidden="true"><i></i><i></i><i></i></span>start.sh</span>
+                <button class="copy-code" type="button" data-copy>复制代码</button>
+              </div>
+              <pre><code data-lang="bash">java \
+  -XX:+UseZGC \
+  -XX:+ZGenerational \
+  -Xmx8g \
+  -Xlog:gc*:file=gc.log \
+  -jar app.jar</code></pre>
+            </div>
+            
+          <div class="note ">
+            <p><strong>以日志为准：</strong>重点观察 Pause、young generation、old generation、堆占用与 GC 线程 CPU 成本。</p>
+          </div>
+          <div class="note warning">
+            <p><strong>不是通用性能开关：</strong>GC 选择应由对象生命周期、堆规模、延迟目标与机器资源共同决定。</p>
+          </div>
+          </section>
+
+          <section class="course-section" id="pitfalls">
+            <div class="course-section-kicker">03 · BOUNDARIES</div>
+            <h2 class="course-section-title"><span class="number">03</span>工程中的边界与易错点</h2>
+            <p>能写出示例不代表可以安全迁移。下面两个问题最值得在设计和评审阶段确认。</p>
+            
+          <article class="pitfall-card">
+            <div class="pitfall-number">01<span>WATCH OUT</span></div>
+            <div>
+              <h3>只看平均暂停</h3>
+              <p>尾延迟、CPU 占用和分配速率同样关键，平均值可能掩盖长尾。</p>
+            </div>
+          </article>
+          <article class="pitfall-card">
+            <div class="pitfall-number">02<span>WATCH OUT</span></div>
+            <div>
+              <h3>未设置明确堆预算</h3>
+              <p>分代回收仍需要足够堆空间；参数组合应在真实压测中验证。</p>
+            </div>
+          </article>
+          </section>
+
+          <section class="course-section" id="summary">
+            <div class="course-section-kicker">04 · SUMMARY</div>
+            <h2 class="course-section-title"><span class="number">04</span>本章小结</h2>
+            <div class="summary-panel" data-jep="JEP 439">
+              <small>TAKEAWAYS</small>
+              <h3>在低暂停目标下，利用分代假设提高分配友好度。</h3>
+              <ul><li>分代利用“大多数对象很快死亡”的经验。</li><li>JDK 21 用 ZGenerational 显式启用。</li><li>GC 优化必须由日志和压测驱动。</li>
+              </ul>
+            </div>
+            
+          <nav class="chapter-pagination" aria-label="章节翻页">
+            <a class="chapter-page-link" href="../sequenced-collections/"><small>← PREVIOUS · 03</small><strong>顺序集合</strong><span>返回上一章</span></a>
+            <a class="chapter-page-link next" href="../record-patterns/"><small>NEXT · 05 →</small><strong>记录模式</strong><span>继续下一章</span></a>
+          </nav>
+            <footer class="course-footer">
+              <span>Yewick Notes · JDK 21 / 分代 ZGC</span>
+              <span><a href="https://openjdk.org/projects/jdk/21/" target="_blank" rel="noreferrer">JDK 21 Project</a> · <a href="../">课程总览</a></span>
+            </footer>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <aside class="course-toc" aria-label="本章目录">
+      <h2>On this page</h2>
+      <nav>
+        <a href="#overview">01 · 核心模型</a>
+        <a href="#example">02 · 可运行示例</a>
+        <a href="#pitfalls">03 · 边界与易错点</a>
+        <a href="#summary">04 · 本章小结</a>
+      </nav>
+      <div class="course-toc-links">官方资料<br><a href="https://openjdk.org/jeps/439" target="_blank" rel="noreferrer">JEP 439</a><br><a href="../">JDK 21 目录</a></div>
+    </aside>
+  </div>
+</body>
+</html>

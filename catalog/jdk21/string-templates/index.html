@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="字符串模板把固定文本与嵌入式表达式组合在一起，再由模板处理器决定最终格式。它比简单拼接更强调可检查性和上下文安全。">
+  <title>字符串模板 | JDK 21 新特性</title>
+  <link rel="stylesheet" href="../../../assets/css/site.css">
+  <link rel="stylesheet" href="../../../assets/css/course.css">
+  <script src="../../../assets/js/site.js" defer></script>
+</head>
+<body>
+  <div class="reading-progress" aria-hidden="true"></div>
+  <div class="course-menu-scrim" aria-hidden="true"></div>
+
+  <div class="course-shell">
+    <aside class="course-sidebar" aria-label="JDK 21 课程导航">
+      <a class="course-brand" href="../../../">
+        <span class="course-brand-mark">21</span>
+        <span class="course-brand-copy"><strong>JDK 新特性实战手册</strong><span>YEWICK NOTES · CATALOG</span></span>
+      </a>
+      <div class="course-branch">
+        <small>CATALOG / JAVA</small>
+        <strong>JDK 21 · 15 JEPs</strong>
+        <a href="../">查看完整特性地图 →</a>
+      </div>
+      <p class="course-nav-caption">COURSE INDEX</p>
+      <nav class="course-nav" aria-label="课程章节">
+          <a class="chapter-link" href="../virtualthread/">
+            <span class="number">01</span>
+            <span class="label">虚拟线程</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link active" href="../string-templates/" aria-current="page">
+            <span class="number">02</span>
+            <span class="label">字符串模板</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../sequenced-collections/">
+            <span class="number">03</span>
+            <span class="label">顺序集合</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../generational-zgc/">
+            <span class="number">04</span>
+            <span class="label">分代 ZGC</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../record-patterns/">
+            <span class="number">05</span>
+            <span class="label">记录模式</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../pattern-matching-switch/">
+            <span class="number">06</span>
+            <span class="label">switch 模式匹配</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../foreign-function-memory/">
+            <span class="number">07</span>
+            <span class="label">外部函数与内存 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-patterns/">
+            <span class="number">08</span>
+            <span class="label">未命名模式与变量</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-classes-main-methods/">
+            <span class="number">09</span>
+            <span class="label">未命名类与实例 main 方法</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../scoped-values/">
+            <span class="number">10</span>
+            <span class="label">作用域值</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../vector-api/">
+            <span class="number">11</span>
+            <span class="label">Vector API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../disallow-win32-port/">
+            <span class="number">12</span>
+            <span class="label">弃用 Windows 32 位 x86 端口</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../dynamic-agent-loading/">
+            <span class="number">13</span>
+            <span class="label">动态加载 Java Agent</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../key-encapsulation/">
+            <span class="number">14</span>
+            <span class="label">密钥封装机制 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../structured-concurrency/">
+            <span class="number">15</span>
+            <span class="label">结构化并发</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+      </nav>
+      <div class="course-sidebar-note">
+        <div class="course-progress-card">
+          <small>JDK 21 · LTS RELEASE</small>
+          <strong>从官方文档出发，落到代码与边界。</strong>
+          <div class="progress-track"><span></span></div>
+          <div class="progress-label"><span>COURSE ATLAS</span><span>15 / 15</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="course-main">
+      <div class="course-topbar">
+        <div class="course-breadcrumbs">
+          <button class="course-menu-toggle" type="button" aria-label="打开课程导航" aria-expanded="false"><span aria-hidden="true"></span></button>
+          <a href="../../../">YEWICK NOTES</a><span>/</span>
+          <a href="../">JDK 21</a><span>/</span>
+          <span class="current">字符串模板</span>
+        </div>
+        <span class="course-topbar-label">CHAPTER 02 / 15</span>
+      </div>
+
+      <article class="course-article">
+        <header class="feature-hero" data-jep="JEP 430">
+          <div class="feature-hero-copy">
+            <div class="feature-kicker">
+              <span class="preview">PREVIEW</span>
+              <span>JEP 430</span>
+              <span>语言表达</span>
+            </div>
+            <h1>字符串模板<em>String Templates</em></h1>
+            <p class="feature-lead">把插值、格式化和安全处理交给模板处理器。 <strong>字符串模板把固定文本与嵌入式表达式组合在一起，再由模板处理器决定最终格式。它比简单拼接更强调可检查性和上下文安全。</strong></p>
+            <div class="feature-meta">
+              <div><strong>JDK 21</strong><span>RELEASE</span></div>
+              <div><strong>JEP 430</strong><span>SPECIFICATION</span></div>
+              <div><strong>语言表达</strong><span>CHAPTER</span></div>
+            </div>
+          </div>
+          <div class="feature-hero-visual" aria-label="本章知识路线示意">
+            <div class="feature-visual-bar"><span>chapter.spec</span><i></i><span>PREVIEW</span></div>
+            <div class="feature-visual-body">
+              <dl class="visual-spec">
+                <dt>JEP</dt><dd>430</dd>
+                <dt>domain</dt><dd>语言表达</dd>
+                <dt>goal</dt><dd>把插值、格式化和安全处理交给模板处理器。</dd>
+              </dl>
+              <div class="visual-rail" aria-hidden="true"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </header>
+
+        <div class="feature-source-note">
+          <span>本章以 OpenJDK JEP 原文与 JDK 21 Release 为依据。</span>
+          <a href="https://openjdk.org/jeps/430" target="_blank" rel="noreferrer">阅读 JEP 430 ↗</a>
+        </div>
+
+        <div class="course-body">
+          <section class="course-objectives" data-reveal aria-labelledby="goals-string-templates">
+            <div><small>LEARNING OBJECTIVES</small><strong id="goals-string-templates">本章学习目标</strong></div>
+            <ul class="course-goals"><li>理解模板处理器与模板表达式的分工</li><li>使用 STR 构造普通字符串</li><li>知道预览 API 不承诺跨版本稳定性</li></ul>
+          </section>
+
+          <section class="course-section" id="overview">
+            <div class="course-section-kicker">01 · CONCEPTUAL MODEL</div>
+            <h2 class="course-section-title"><span class="number">01</span>先抓住核心模型</h2>
+            <p class="lead">字符串模板把固定文本与嵌入式表达式组合在一起，再由模板处理器决定最终格式。它比简单拼接更强调可检查性和上下文安全。</p>
+            <div class="concept-grid">
+            <article class="concept-card">
+              <small>TEMPLATE</small>
+              <h3>模板表达式</h3>
+              <p>固定文本与反斜杠包裹的表达式共同组成模板。</p>
+            </article>
+            <article class="concept-card">
+              <small>PROCESSOR</small>
+              <h3>处理器</h3>
+              <p>STR、FMT 或自定义处理器决定模板如何验证与组合。</p>
+            </article>
+            <article class="concept-card">
+              <small>PREVIEW</small>
+              <h3>预览特性</h3>
+              <p>JDK 21 中需要开启 preview 才能编译和运行。</p>
+            </article>
+            </div>
+            <ul class="change-list"><li>嵌入式表达式使用反斜杠加花括号，而不是传统字符串拼接。</li><li>模板先形成可处理的结构，再交给模板处理器转换。</li><li>标准处理器包括 STR 与 FMT，也允许实现自定义处理器。</li>
+            </ul>
+          </section>
+
+          <section class="course-section" id="example">
+            <div class="course-section-kicker">02 · HANDS-ON</div>
+            <h2 class="course-section-title"><span class="number">02</span>构造一条可读的欢迎信息</h2>
+            <p>示例保持最小可读，重点是展示这项能力如何使用，以及它与普通 Java 代码的关系。</p>
+            <div class="code-shell">
+              <div class="code-shell-bar">
+                <span class="code-shell-title"><span class="mini-dots" aria-hidden="true"><i></i><i></i><i></i></span>TemplateDemo.java</span>
+                <button class="copy-code" type="button" data-copy>复制代码</button>
+              </div>
+              <pre><code data-lang="java">record User(String name, int age) {}
+
+public class TemplateDemo {
+    public static void main(String[] args) {
+        User user = new User("Duke", 21);
+
+        String message = STR."""
+            欢迎 \{user.name()}，
+            今年 \{user.age()} 岁。
+            """;
+
+        System.out.println(message);
+    }
+}</code></pre>
+            </div>
+            
+          <div class="note ">
+            <p><strong>编译命令：</strong>使用 JDK 21 预览能力：javac --enable-preview --release 21 TemplateDemo.java。</p>
+          </div>
+          <div class="note warning">
+            <p><strong>不等于字符串拼接：</strong>模板处理器可以在生成结果之前检查表达式、格式和上下文，这为 SQL、HTML 等场景提供了安全扩展点。</p>
+          </div>
+          </section>
+
+          <section class="course-section" id="pitfalls">
+            <div class="course-section-kicker">03 · BOUNDARIES</div>
+            <h2 class="course-section-title"><span class="number">03</span>工程中的边界与易错点</h2>
+            <p>能写出示例不代表可以安全迁移。下面两个问题最值得在设计和评审阶段确认。</p>
+            
+          <article class="pitfall-card">
+            <div class="pitfall-number">01<span>WATCH OUT</span></div>
+            <div>
+              <h3>省略处理器</h3>
+              <p>模板必须有处理器，例如 STR.&quot;...&quot;；它不是无上下文的语言级字符串插值。</p>
+            </div>
+          </article>
+          <article class="pitfall-card">
+            <div class="pitfall-number">02<span>WATCH OUT</span></div>
+            <div>
+              <h3>把预览语法写进长期 API</h3>
+              <p>预览特性可能调整甚至被撤回，库设计需要谨慎。</p>
+            </div>
+          </article>
+          </section>
+
+          <section class="course-section" id="summary">
+            <div class="course-section-kicker">04 · SUMMARY</div>
+            <h2 class="course-section-title"><span class="number">04</span>本章小结</h2>
+            <div class="summary-panel" data-jep="JEP 430">
+              <small>TAKEAWAYS</small>
+              <h3>把插值、格式化和安全处理交给模板处理器。</h3>
+              <ul><li>模板 = 文本 + 表达式 + 处理器。</li><li>先组合模板，再决定如何生成结果。</li><li>JDK 21 中必须明确预览边界。</li>
+              </ul>
+            </div>
+            
+          <nav class="chapter-pagination" aria-label="章节翻页">
+            <a class="chapter-page-link" href="../virtualthread/"><small>← PREVIOUS · 01</small><strong>虚拟线程</strong><span>返回上一章</span></a>
+            <a class="chapter-page-link next" href="../sequenced-collections/"><small>NEXT · 03 →</small><strong>顺序集合</strong><span>继续下一章</span></a>
+          </nav>
+            <footer class="course-footer">
+              <span>Yewick Notes · JDK 21 / 字符串模板</span>
+              <span><a href="https://openjdk.org/projects/jdk/21/" target="_blank" rel="noreferrer">JDK 21 Project</a> · <a href="../">课程总览</a></span>
+            </footer>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <aside class="course-toc" aria-label="本章目录">
+      <h2>On this page</h2>
+      <nav>
+        <a href="#overview">01 · 核心模型</a>
+        <a href="#example">02 · 可运行示例</a>
+        <a href="#pitfalls">03 · 边界与易错点</a>
+        <a href="#summary">04 · 本章小结</a>
+      </nav>
+      <div class="course-toc-links">官方资料<br><a href="https://openjdk.org/jeps/430" target="_blank" rel="noreferrer">JEP 430</a><br><a href="../">JDK 21 目录</a></div>
+    </aside>
+  </div>
+</body>
+</html>

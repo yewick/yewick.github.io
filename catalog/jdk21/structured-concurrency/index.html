@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="结构化并发把同一业务操作拆出的多个并发子任务组织到 StructuredTaskScope 中。父作用域统一等待、取消和传播错误，使线程关系与调用结构保持一致。">
+  <title>结构化并发 | JDK 21 新特性</title>
+  <link rel="stylesheet" href="../../../assets/css/site.css">
+  <link rel="stylesheet" href="../../../assets/css/course.css">
+  <script src="../../../assets/js/site.js" defer></script>
+</head>
+<body>
+  <div class="reading-progress" aria-hidden="true"></div>
+  <div class="course-menu-scrim" aria-hidden="true"></div>
+
+  <div class="course-shell">
+    <aside class="course-sidebar" aria-label="JDK 21 课程导航">
+      <a class="course-brand" href="../../../">
+        <span class="course-brand-mark">21</span>
+        <span class="course-brand-copy"><strong>JDK 新特性实战手册</strong><span>YEWICK NOTES · CATALOG</span></span>
+      </a>
+      <div class="course-branch">
+        <small>CATALOG / JAVA</small>
+        <strong>JDK 21 · 15 JEPs</strong>
+        <a href="../">查看完整特性地图 →</a>
+      </div>
+      <p class="course-nav-caption">COURSE INDEX</p>
+      <nav class="course-nav" aria-label="课程章节">
+          <a class="chapter-link" href="../virtualthread/">
+            <span class="number">01</span>
+            <span class="label">虚拟线程</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../string-templates/">
+            <span class="number">02</span>
+            <span class="label">字符串模板</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../sequenced-collections/">
+            <span class="number">03</span>
+            <span class="label">顺序集合</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../generational-zgc/">
+            <span class="number">04</span>
+            <span class="label">分代 ZGC</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../record-patterns/">
+            <span class="number">05</span>
+            <span class="label">记录模式</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../pattern-matching-switch/">
+            <span class="number">06</span>
+            <span class="label">switch 模式匹配</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../foreign-function-memory/">
+            <span class="number">07</span>
+            <span class="label">外部函数与内存 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-patterns/">
+            <span class="number">08</span>
+            <span class="label">未命名模式与变量</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-classes-main-methods/">
+            <span class="number">09</span>
+            <span class="label">未命名类与实例 main 方法</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../scoped-values/">
+            <span class="number">10</span>
+            <span class="label">作用域值</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../vector-api/">
+            <span class="number">11</span>
+            <span class="label">Vector API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../disallow-win32-port/">
+            <span class="number">12</span>
+            <span class="label">弃用 Windows 32 位 x86 端口</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../dynamic-agent-loading/">
+            <span class="number">13</span>
+            <span class="label">动态加载 Java Agent</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../key-encapsulation/">
+            <span class="number">14</span>
+            <span class="label">密钥封装机制 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link active" href="../structured-concurrency/" aria-current="page">
+            <span class="number">15</span>
+            <span class="label">结构化并发</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+      </nav>
+      <div class="course-sidebar-note">
+        <div class="course-progress-card">
+          <small>JDK 21 · LTS RELEASE</small>
+          <strong>从官方文档出发，落到代码与边界。</strong>
+          <div class="progress-track"><span></span></div>
+          <div class="progress-label"><span>COURSE ATLAS</span><span>15 / 15</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="course-main">
+      <div class="course-topbar">
+        <div class="course-breadcrumbs">
+          <button class="course-menu-toggle" type="button" aria-label="打开课程导航" aria-expanded="false"><span aria-hidden="true"></span></button>
+          <a href="../../../">YEWICK NOTES</a><span>/</span>
+          <a href="../">JDK 21</a><span>/</span>
+          <span class="current">结构化并发</span>
+        </div>
+        <span class="course-topbar-label">CHAPTER 15 / 15</span>
+      </div>
+
+      <article class="course-article">
+        <header class="feature-hero" data-jep="JEP 453">
+          <div class="feature-hero-copy">
+            <div class="feature-kicker">
+              <span class="preview">PREVIEW</span>
+              <span>JEP 453</span>
+              <span>并发编程</span>
+            </div>
+            <h1>结构化并发<em>Structured Concurrency</em></h1>
+            <p class="feature-lead">让一组并发子任务拥有共同的开始、结束与错误边界。 <strong>结构化并发把同一业务操作拆出的多个并发子任务组织到 StructuredTaskScope 中。父作用域统一等待、取消和传播错误，使线程关系与调用结构保持一致。</strong></p>
+            <div class="feature-meta">
+              <div><strong>JDK 21</strong><span>RELEASE</span></div>
+              <div><strong>JEP 453</strong><span>SPECIFICATION</span></div>
+              <div><strong>并发编程</strong><span>CHAPTER</span></div>
+            </div>
+          </div>
+          <div class="feature-hero-visual" aria-label="本章知识路线示意">
+            <div class="feature-visual-bar"><span>chapter.spec</span><i></i><span>PREVIEW</span></div>
+            <div class="feature-visual-body">
+              <dl class="visual-spec">
+                <dt>JEP</dt><dd>453</dd>
+                <dt>domain</dt><dd>并发编程</dd>
+                <dt>goal</dt><dd>让一组并发子任务拥有共同的开始、结束与错误边界。</dd>
+              </dl>
+              <div class="visual-rail" aria-hidden="true"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </header>
+
+        <div class="feature-source-note">
+          <span>本章以 OpenJDK JEP 原文与 JDK 21 Release 为依据。</span>
+          <a href="https://openjdk.org/jeps/453" target="_blank" rel="noreferrer">阅读 JEP 453 ↗</a>
+        </div>
+
+        <div class="course-body">
+          <section class="course-objectives" data-reveal aria-labelledby="goals-structured-concurrency">
+            <div><small>LEARNING OBJECTIVES</small><strong id="goals-structured-concurrency">本章学习目标</strong></div>
+            <ul class="course-goals"><li>用 StructuredTaskScope 管理子任务</li><li>理解 ShutdownOnFailure 的失败传播</li><li>区分结构化并发与虚拟线程</li></ul>
+          </section>
+
+          <section class="course-section" id="overview">
+            <div class="course-section-kicker">01 · CONCEPTUAL MODEL</div>
+            <h2 class="course-section-title"><span class="number">01</span>先抓住核心模型</h2>
+            <p class="lead">结构化并发把同一业务操作拆出的多个并发子任务组织到 StructuredTaskScope 中。父作用域统一等待、取消和传播错误，使线程关系与调用结构保持一致。</p>
+            <div class="concept-grid">
+            <article class="concept-card">
+              <small>SCOPE</small>
+              <h3>共同作用域</h3>
+              <p>所有 fork 出的子任务都属于同一个词法作用域。</p>
+            </article>
+            <article class="concept-card">
+              <small>JOIN</small>
+              <h3>统一汇合</h3>
+              <p>join 等待子任务结束，或按策略在失败时关闭剩余任务。</p>
+            </article>
+            <article class="concept-card">
+              <small>VIRTUAL</small>
+              <h3>默认运行于虚拟线程</h3>
+              <p>结构化并发提供任务组织模型，虚拟线程提供执行载体。</p>
+            </article>
+            </div>
+            <ul class="change-list"><li>StructuredTaskScope 作为预览 API 出现在 JDK 21。</li><li>ShutdownOnFailure 在任一子任务失败时可取消其他任务。</li><li>作用域关闭时不会留下未受管理的并发任务。</li>
+            </ul>
+          </section>
+
+          <section class="course-section" id="example">
+            <div class="course-section-kicker">02 · HANDS-ON</div>
+            <h2 class="course-section-title"><span class="number">02</span>并发查询用户与订单后组合结果</h2>
+            <p>示例保持最小可读，重点是展示这项能力如何使用，以及它与普通 Java 代码的关系。</p>
+            <div class="code-shell">
+              <div class="code-shell-bar">
+                <span class="code-shell-title"><span class="mini-dots" aria-hidden="true"><i></i><i></i><i></i></span>StructuredDemo.java</span>
+                <button class="copy-code" type="button" data-copy>复制代码</button>
+              </div>
+              <pre><code data-lang="java">import java.util.concurrent.StructuredTaskScope;
+
+public class StructuredDemo {
+    record Profile(String user, String orders) {}
+
+    static Profile loadProfile(long id) throws Exception {
+        try (var scope =
+                 new StructuredTaskScope.ShutdownOnFailure()) {
+            var user = scope.fork(() -&gt; findUser(id));
+            var orders = scope.fork(() -&gt; findOrders(id));
+
+            scope.join().throwIfFailed();
+            return new Profile(user.get(), orders.get());
+        }
+    }
+
+    static String findUser(long id) {
+        return "user-" + id;
+    }
+
+    static String findOrders(long id) {
+        return "orders-" + id;
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.out.println(loadProfile(21));
+    }
+}</code></pre>
+            </div>
+            
+          <div class="note ">
+            <p><strong>组织关系比执行方式更重要：</strong>结构化并发主要解决子任务生命周期与错误传播；虚拟线程解决大量任务的执行成本。</p>
+          </div>
+          <div class="note warning">
+            <p><strong>仍然是预览 API：</strong>JDK 21 中 API 可能变化，需要 --enable-preview 才能编译运行。</p>
+          </div>
+          </section>
+
+          <section class="course-section" id="pitfalls">
+            <div class="course-section-kicker">03 · BOUNDARIES</div>
+            <h2 class="course-section-title"><span class="number">03</span>工程中的边界与易错点</h2>
+            <p>能写出示例不代表可以安全迁移。下面两个问题最值得在设计和评审阶段确认。</p>
+            
+          <article class="pitfall-card">
+            <div class="pitfall-number">01<span>WATCH OUT</span></div>
+            <div>
+              <h3>把 fork 当线程池</h3>
+              <p>作用域表示一次业务操作的子任务边界，不应被长期持有或跨请求复用。</p>
+            </div>
+          </article>
+          <article class="pitfall-card">
+            <div class="pitfall-number">02<span>WATCH OUT</span></div>
+            <div>
+              <h3>失败后继续读取结果</h3>
+              <p>ShutdownOnFailure 会取消其他任务；应先 join 并检查失败，再读取成功结果。</p>
+            </div>
+          </article>
+          </section>
+
+          <section class="course-section" id="summary">
+            <div class="course-section-kicker">04 · SUMMARY</div>
+            <h2 class="course-section-title"><span class="number">04</span>本章小结</h2>
+            <div class="summary-panel" data-jep="JEP 453">
+              <small>TAKEAWAYS</small>
+              <h3>让一组并发子任务拥有共同的开始、结束与错误边界。</h3>
+              <ul><li>子任务不应逃逸出父操作作用域。</li><li>失败和取消应沿结构化边界传播。</li><li>结构化并发与虚拟线程是互补能力。</li>
+              </ul>
+            </div>
+            
+          <nav class="chapter-pagination" aria-label="章节翻页">
+            <a class="chapter-page-link" href="../key-encapsulation/"><small>← PREVIOUS · 14</small><strong>密钥封装机制 API</strong><span>返回上一章</span></a>
+            <a class="chapter-page-link next" href="../"><small>FINISHED →</small><strong>返回 JDK 21 特性地图</strong><span>查看完整目录</span></a>
+          </nav>
+            <footer class="course-footer">
+              <span>Yewick Notes · JDK 21 / 结构化并发</span>
+              <span><a href="https://openjdk.org/projects/jdk/21/" target="_blank" rel="noreferrer">JDK 21 Project</a> · <a href="../">课程总览</a></span>
+            </footer>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <aside class="course-toc" aria-label="本章目录">
+      <h2>On this page</h2>
+      <nav>
+        <a href="#overview">01 · 核心模型</a>
+        <a href="#example">02 · 可运行示例</a>
+        <a href="#pitfalls">03 · 边界与易错点</a>
+        <a href="#summary">04 · 本章小结</a>
+      </nav>
+      <div class="course-toc-links">官方资料<br><a href="https://openjdk.org/jeps/453" target="_blank" rel="noreferrer">JEP 453</a><br><a href="../">JDK 21 目录</a></div>
+    </aside>
+  </div>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="未命名模式与未命名变量用下划线代替不会被使用的名字，让模式解构和局部变量声明更直接，同时避免无意义的命名与未使用警告。">
+  <title>未命名模式与变量 | JDK 21 新特性</title>
+  <link rel="stylesheet" href="../../../assets/css/site.css">
+  <link rel="stylesheet" href="../../../assets/css/course.css">
+  <script src="../../../assets/js/site.js" defer></script>
+</head>
+<body>
+  <div class="reading-progress" aria-hidden="true"></div>
+  <div class="course-menu-scrim" aria-hidden="true"></div>
+
+  <div class="course-shell">
+    <aside class="course-sidebar" aria-label="JDK 21 课程导航">
+      <a class="course-brand" href="../../../">
+        <span class="course-brand-mark">21</span>
+        <span class="course-brand-copy"><strong>JDK 新特性实战手册</strong><span>YEWICK NOTES · CATALOG</span></span>
+      </a>
+      <div class="course-branch">
+        <small>CATALOG / JAVA</small>
+        <strong>JDK 21 · 15 JEPs</strong>
+        <a href="../">查看完整特性地图 →</a>
+      </div>
+      <p class="course-nav-caption">COURSE INDEX</p>
+      <nav class="course-nav" aria-label="课程章节">
+          <a class="chapter-link" href="../virtualthread/">
+            <span class="number">01</span>
+            <span class="label">虚拟线程</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../string-templates/">
+            <span class="number">02</span>
+            <span class="label">字符串模板</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../sequenced-collections/">
+            <span class="number">03</span>
+            <span class="label">顺序集合</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../generational-zgc/">
+            <span class="number">04</span>
+            <span class="label">分代 ZGC</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../record-patterns/">
+            <span class="number">05</span>
+            <span class="label">记录模式</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../pattern-matching-switch/">
+            <span class="number">06</span>
+            <span class="label">switch 模式匹配</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../foreign-function-memory/">
+            <span class="number">07</span>
+            <span class="label">外部函数与内存 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link active" href="../unnamed-patterns/" aria-current="page">
+            <span class="number">08</span>
+            <span class="label">未命名模式与变量</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-classes-main-methods/">
+            <span class="number">09</span>
+            <span class="label">未命名类与实例 main 方法</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../scoped-values/">
+            <span class="number">10</span>
+            <span class="label">作用域值</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../vector-api/">
+            <span class="number">11</span>
+            <span class="label">Vector API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../disallow-win32-port/">
+            <span class="number">12</span>
+            <span class="label">弃用 Windows 32 位 x86 端口</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../dynamic-agent-loading/">
+            <span class="number">13</span>
+            <span class="label">动态加载 Java Agent</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../key-encapsulation/">
+            <span class="number">14</span>
+            <span class="label">密钥封装机制 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../structured-concurrency/">
+            <span class="number">15</span>
+            <span class="label">结构化并发</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+      </nav>
+      <div class="course-sidebar-note">
+        <div class="course-progress-card">
+          <small>JDK 21 · LTS RELEASE</small>
+          <strong>从官方文档出发，落到代码与边界。</strong>
+          <div class="progress-track"><span></span></div>
+          <div class="progress-label"><span>COURSE ATLAS</span><span>15 / 15</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="course-main">
+      <div class="course-topbar">
+        <div class="course-breadcrumbs">
+          <button class="course-menu-toggle" type="button" aria-label="打开课程导航" aria-expanded="false"><span aria-hidden="true"></span></button>
+          <a href="../../../">YEWICK NOTES</a><span>/</span>
+          <a href="../">JDK 21</a><span>/</span>
+          <span class="current">未命名模式与变量</span>
+        </div>
+        <span class="course-topbar-label">CHAPTER 08 / 15</span>
+      </div>
+
+      <article class="course-article">
+        <header class="feature-hero" data-jep="JEP 443">
+          <div class="feature-hero-copy">
+            <div class="feature-kicker">
+              <span class="preview">PREVIEW</span>
+              <span>JEP 443</span>
+              <span>语言表达</span>
+            </div>
+            <h1>未命名模式与变量<em>Unnamed Patterns and Variables</em></h1>
+            <p class="feature-lead">用一个下划线表达“不关心这个值”。 <strong>未命名模式与未命名变量用下划线代替不会被使用的名字，让模式解构和局部变量声明更直接，同时避免无意义的命名与未使用警告。</strong></p>
+            <div class="feature-meta">
+              <div><strong>JDK 21</strong><span>RELEASE</span></div>
+              <div><strong>JEP 443</strong><span>SPECIFICATION</span></div>
+              <div><strong>语言表达</strong><span>CHAPTER</span></div>
+            </div>
+          </div>
+          <div class="feature-hero-visual" aria-label="本章知识路线示意">
+            <div class="feature-visual-bar"><span>chapter.spec</span><i></i><span>PREVIEW</span></div>
+            <div class="feature-visual-body">
+              <dl class="visual-spec">
+                <dt>JEP</dt><dd>443</dd>
+                <dt>domain</dt><dd>语言表达</dd>
+                <dt>goal</dt><dd>用一个下划线表达“不关心这个值”。</dd>
+              </dl>
+              <div class="visual-rail" aria-hidden="true"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </header>
+
+        <div class="feature-source-note">
+          <span>本章以 OpenJDK JEP 原文与 JDK 21 Release 为依据。</span>
+          <a href="https://openjdk.org/jeps/443" target="_blank" rel="noreferrer">阅读 JEP 443 ↗</a>
+        </div>
+
+        <div class="course-body">
+          <section class="course-objectives" data-reveal aria-labelledby="goals-unnamed-patterns">
+            <div><small>LEARNING OBJECTIVES</small><strong id="goals-unnamed-patterns">本章学习目标</strong></div>
+            <ul class="course-goals"><li>在记录模式中使用未命名模式</li><li>在局部变量与 catch 参数中使用下划线</li><li>区分未命名和普通变量的作用域</li></ul>
+          </section>
+
+          <section class="course-section" id="overview">
+            <div class="course-section-kicker">01 · CONCEPTUAL MODEL</div>
+            <h2 class="course-section-title"><span class="number">01</span>先抓住核心模型</h2>
+            <p class="lead">未命名模式与未命名变量用下划线代替不会被使用的名字，让模式解构和局部变量声明更直接，同时避免无意义的命名与未使用警告。</p>
+            <div class="concept-grid">
+            <article class="concept-card">
+              <small>_</small>
+              <h3>未命名模式</h3>
+              <p>模式位置上的下划线表示不绑定该位置的值。</p>
+            </article>
+            <article class="concept-card">
+              <small>LOCAL</small>
+              <h3>未命名变量</h3>
+              <p>局部变量或异常参数可以省略名字，明确表达不会读取这个值。</p>
+            </article>
+            <article class="concept-card">
+              <small>SCOPE</small>
+              <h3>不可访问</h3>
+              <p>未命名变量没有可用的标识符，不能像普通变量一样引用。</p>
+            </article>
+            </div>
+            <ul class="change-list"><li>记录模式中的组件可以使用未命名模式。</li><li>局部变量声明、for-each 与 catch 参数可使用未命名变量。</li><li>编译器不再因为“变量定义了但未使用”而需要无意义命名。</li>
+            </ul>
+          </section>
+
+          <section class="course-section" id="example">
+            <div class="course-section-kicker">02 · HANDS-ON</div>
+            <h2 class="course-section-title"><span class="number">02</span>只关心坐标 x，忽略 y</h2>
+            <p>示例保持最小可读，重点是展示这项能力如何使用，以及它与普通 Java 代码的关系。</p>
+            <div class="code-shell">
+              <div class="code-shell-bar">
+                <span class="code-shell-title"><span class="mini-dots" aria-hidden="true"><i></i><i></i><i></i></span>UnnamedPatternDemo.java</span>
+                <button class="copy-code" type="button" data-copy>复制代码</button>
+              </div>
+              <pre><code data-lang="java">record Point(int x, int y) {}
+record Box&lt;T&gt;(T value) {}
+
+public class UnnamedPatternDemo {
+    public static void main(String[] args) {
+        Object value = new Point(12, 8);
+
+        if (value instanceof Point(var x, _)) {
+            System.out.println("x = " + x);
+        }
+
+        Object box = new Box&lt;&gt;("payload");
+        if (box instanceof Box(_)) {
+            System.out.println("只关心是否是非 null Box");
+        }
+
+        try {
+            Integer.parseInt("not-a-number");
+        } catch (NumberFormatException _) {
+            System.out.println("格式错误");
+        }
+    }
+}</code></pre>
+            </div>
+            
+          <div class="note ">
+            <p><strong>意图更明确：</strong>下划线不是约等于“丢弃赋值”，而是语言层面声明“此处不需要名字”。</p>
+          </div>
+          <div class="note warning">
+            <p><strong>预览边界：</strong>JDK 21 编译该语法需要启用 preview。</p>
+          </div>
+          </section>
+
+          <section class="course-section" id="pitfalls">
+            <div class="course-section-kicker">03 · BOUNDARIES</div>
+            <h2 class="course-section-title"><span class="number">03</span>工程中的边界与易错点</h2>
+            <p>能写出示例不代表可以安全迁移。下面两个问题最值得在设计和评审阶段确认。</p>
+            
+          <article class="pitfall-card">
+            <div class="pitfall-number">01<span>WATCH OUT</span></div>
+            <div>
+              <h3>把 _ 当成普通变量</h3>
+              <p>未命名变量不能被读取，也不能通过多个下划线规避命名。</p>
+            </div>
+          </article>
+          <article class="pitfall-card">
+            <div class="pitfall-number">02<span>WATCH OUT</span></div>
+            <div>
+              <h3>过度使用</h3>
+              <p>省略名字应当强化意图；如果值确实需要理解，保留描述性变量名更好。</p>
+            </div>
+          </article>
+          </section>
+
+          <section class="course-section" id="summary">
+            <div class="course-section-kicker">04 · SUMMARY</div>
+            <h2 class="course-section-title"><span class="number">04</span>本章小结</h2>
+            <div class="summary-panel" data-jep="JEP 443">
+              <small>TAKEAWAYS</small>
+              <h3>用一个下划线表达“不关心这个值”。</h3>
+              <ul><li>下划线表达不绑定的意图。</li><li>模式解构不一定要为每个位置命名。</li><li>JDK 21 中仍属于预览语言特性。</li>
+              </ul>
+            </div>
+            
+          <nav class="chapter-pagination" aria-label="章节翻页">
+            <a class="chapter-page-link" href="../foreign-function-memory/"><small>← PREVIOUS · 07</small><strong>外部函数与内存 API</strong><span>返回上一章</span></a>
+            <a class="chapter-page-link next" href="../unnamed-classes-main-methods/"><small>NEXT · 09 →</small><strong>未命名类与实例 main 方法</strong><span>继续下一章</span></a>
+          </nav>
+            <footer class="course-footer">
+              <span>Yewick Notes · JDK 21 / 未命名模式与变量</span>
+              <span><a href="https://openjdk.org/projects/jdk/21/" target="_blank" rel="noreferrer">JDK 21 Project</a> · <a href="../">课程总览</a></span>
+            </footer>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <aside class="course-toc" aria-label="本章目录">
+      <h2>On this page</h2>
+      <nav>
+        <a href="#overview">01 · 核心模型</a>
+        <a href="#example">02 · 可运行示例</a>
+        <a href="#pitfalls">03 · 边界与易错点</a>
+        <a href="#summary">04 · 本章小结</a>
+      </nav>
+      <div class="course-toc-links">官方资料<br><a href="https://openjdk.org/jeps/443" target="_blank" rel="noreferrer">JEP 443</a><br><a href="../">JDK 21 目录</a></div>
+    </aside>
+  </div>
+</body>
+</html>

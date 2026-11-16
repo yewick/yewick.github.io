@@ -1,0 +1,3952 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="结合 JDK 21 官方文档与 JEP 444 的虚拟线程中文教学页面。">
+  <title>虚拟线程 | JDK 21 新特性</title>
+  <style>
+    :root {
+      --ink: #142033;
+      --ink-soft: #536176;
+      --ink-faint: #8a96a8;
+      --paper: #fffefd;
+      --canvas: #f1f4f8;
+      --panel: #f8fafc;
+      --panel-blue: #f2f5ff;
+      --line: #dce3ec;
+      --line-strong: #c8d2df;
+      --accent: #3158e8;
+      --accent-dark: #203ca6;
+      --accent-soft: #edf1ff;
+      --mint: #128568;
+      --mint-soft: #e8f7f1;
+      --amber: #b87512;
+      --amber-soft: #fff5df;
+      --danger: #bf3f4d;
+      --danger-soft: #fff0f1;
+      --navy: #0a1324;
+      --navy-2: #111e35;
+      --code: #0d1729;
+      --code-2: #111f35;
+      --shadow-sm: 0 1px 2px rgba(13, 23, 41, 0.05);
+      --shadow-md: 0 14px 40px -28px rgba(13, 23, 41, 0.34);
+      --shadow-lg: 0 28px 70px -38px rgba(13, 23, 41, 0.48);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 22px;
+      --font-sans: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --font-display: "DIN Alternate", "Avenir Next Condensed", "PingFang SC", "Hiragino Sans GB", sans-serif;
+      --font-serif: "Songti SC", "STSong", "Noto Serif SC", Georgia, serif;
+      --font-mono: "SFMono-Regular", "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+      --sidebar: 272px;
+      --toc: 236px;
+      --reading: 860px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 88px;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 74% 4%, rgba(49, 88, 232, 0.08), transparent 28rem),
+        linear-gradient(90deg, rgba(20, 32, 51, 0.024) 1px, transparent 1px),
+        linear-gradient(rgba(20, 32, 51, 0.018) 1px, transparent 1px),
+        var(--canvas);
+      background-size: auto, 48px 48px, 48px 48px, auto;
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button,
+    a,
+    summary {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-color: rgba(49, 88, 232, 0.3);
+      text-underline-offset: 0.18em;
+    }
+
+    a:hover {
+      text-decoration-color: currentColor;
+    }
+
+    button:focus-visible,
+    a:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid rgba(49, 88, 232, 0.27);
+      outline-offset: 3px;
+    }
+
+    ::selection {
+      color: #fff;
+      background: var(--accent);
+    }
+
+    .reading-progress {
+      position: fixed;
+      z-index: 100;
+      inset: 0 auto auto 0;
+      width: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #7da0ff, #2fe0ae);
+      box-shadow: 0 0 18px rgba(49, 88, 232, 0.45);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: var(--sidebar) minmax(0, 1fr) var(--toc);
+      width: min(1580px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 26px 20px 20px;
+      background: rgba(248, 250, 252, 0.94);
+      border-right: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 2px 8px 24px;
+    }
+
+    .brand-mark {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 45px;
+      height: 45px;
+      overflow: hidden;
+      color: #fff;
+      background: var(--navy);
+      border-radius: 13px;
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      box-shadow: var(--shadow-md);
+    }
+
+    .brand-mark::after {
+      position: absolute;
+      inset: auto -8px -11px auto;
+      width: 29px;
+      height: 29px;
+      content: "";
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .brand-mark span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .brand-name {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 750;
+      letter-spacing: 0.01em;
+      line-height: 1.35;
+    }
+
+    .brand-subtitle {
+      margin: 3px 0 0;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .nav-caption {
+      margin: 2px 12px 10px;
+      color: var(--ink-faint);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+    }
+
+    .course-nav {
+      display: grid;
+      gap: 5px;
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .course-link {
+      display: grid;
+      grid-template-columns: 31px minmax(0, 1fr) auto;
+      align-items: center;
+      min-height: 45px;
+      padding: 8px 10px;
+      color: var(--ink-soft);
+      border: 1px solid transparent;
+      border-radius: 11px;
+      text-decoration: none;
+      transition: color 180ms ease, background 180ms ease, border-color 180ms ease, transform 180ms ease;
+    }
+
+    .course-link:hover {
+      color: var(--ink);
+      background: #fff;
+      border-color: var(--line);
+      transform: translateX(2px);
+    }
+
+    .course-link.active {
+      color: var(--accent-dark);
+      background: var(--accent-soft);
+      border-color: #dde4ff;
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    .course-link .index {
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .course-link.active .index {
+      color: var(--accent);
+    }
+
+    .course-link .title {
+      overflow: hidden;
+      font-size: 13px;
+      font-weight: 650;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .course-link .soon {
+      padding: 2px 6px;
+      color: var(--ink-faint);
+      background: #eef1f5;
+      border-radius: 999px;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .course-link.disabled {
+      cursor: not-allowed;
+      opacity: 0.66;
+    }
+
+    .sidebar-note {
+      position: relative;
+      margin-top: auto;
+      overflow: hidden;
+      padding: 17px;
+      color: #dbe6ff;
+      background:
+        radial-gradient(circle at 100% 0, rgba(92, 127, 255, 0.45), transparent 60%),
+        var(--navy-2);
+      border-radius: 15px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .sidebar-note::after {
+      position: absolute;
+      right: -17px;
+      bottom: -25px;
+      width: 80px;
+      height: 80px;
+      content: "";
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 50%;
+    }
+
+    .sidebar-note-label {
+      color: #88a5ff;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-note strong {
+      display: block;
+      margin: 5px 0 8px;
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .sidebar-note p {
+      margin: 0;
+      color: #aebbd0;
+      font-size: 11px;
+      line-height: 1.65;
+    }
+
+    .chapter-meter {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .chapter-meter-track {
+      flex: 1;
+      height: 3px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.13);
+      border-radius: 999px;
+    }
+
+    .chapter-meter-track span {
+      display: block;
+      width: 6.67%;
+      height: 100%;
+      background: #7d9fff;
+    }
+
+    .chapter-meter b {
+      color: #dbe6ff;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .main {
+      min-width: 0;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 66px;
+      padding: 0 32px;
+      background: rgba(241, 244, 248, 0.86);
+      border-bottom: 1px solid rgba(220, 227, 236, 0.82);
+      backdrop-filter: blur(17px);
+    }
+
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      color: var(--ink-faint);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .breadcrumbs a {
+      color: var(--ink-soft);
+      text-decoration: none;
+    }
+
+    .breadcrumb-divider {
+      color: #b2bccb;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chapter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 10px;
+      color: var(--ink-soft);
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.04em;
+    }
+
+    .chapter-chip::before {
+      width: 6px;
+      height: 6px;
+      content: "";
+      background: var(--mint);
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(18, 133, 104, 0.1);
+    }
+
+    .menu-toggle {
+      display: none;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .menu-toggle span,
+    .menu-toggle::before,
+    .menu-toggle::after {
+      display: block;
+      width: 16px;
+      height: 1.5px;
+      content: "";
+      background: currentColor;
+      border-radius: 2px;
+    }
+
+    .menu-toggle span {
+      margin: 4px 0;
+    }
+
+    .article {
+      width: min(100%, 1030px);
+      margin: 0 auto;
+      padding: 28px 34px 92px;
+    }
+
+    .hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.26fr) minmax(280px, 0.74fr);
+      min-height: 420px;
+      overflow: hidden;
+      color: #fff;
+      background:
+        radial-gradient(circle at 82% 24%, rgba(76, 119, 255, 0.44), transparent 24rem),
+        linear-gradient(132deg, var(--navy) 0%, #122443 66%, #153168 100%);
+      border-radius: 26px;
+      box-shadow: var(--shadow-lg);
+      isolation: isolate;
+    }
+
+    .hero::before {
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      content: "";
+      opacity: 0.2;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+      background-size: 38px 38px;
+      mask-image: linear-gradient(90deg, transparent, #000 60%, #000);
+    }
+
+    .hero::after {
+      position: absolute;
+      z-index: -1;
+      right: -25px;
+      bottom: -115px;
+      content: "M:N";
+      color: rgba(255, 255, 255, 0.035);
+      font-family: var(--font-serif);
+      font-size: 240px;
+      font-weight: 700;
+      letter-spacing: -0.14em;
+      line-height: 1;
+    }
+
+    .hero-copy {
+      align-self: center;
+      padding: 48px 10px 46px 48px;
+      animation: hero-in 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .hero-kicker {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .hero-kicker span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 25px;
+      padding: 2px 9px;
+      color: #c8d6ff;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+    }
+
+    .hero-kicker span:first-child {
+      color: #0e2730;
+      background: #5ee4bc;
+      border-color: transparent;
+      font-weight: 750;
+    }
+
+    .hero h1 {
+      max-width: 610px;
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(48px, 5.5vw, 74px);
+      font-weight: 800;
+      letter-spacing: -0.055em;
+      line-height: 1.05;
+    }
+
+    .hero h1 em {
+      display: block;
+      margin-top: 10px;
+      color: #87a5ff;
+      font-family: var(--font-serif);
+      font-size: 0.37em;
+      font-weight: 500;
+      font-style: normal;
+      letter-spacing: 0.01em;
+    }
+
+    .hero-lead {
+      max-width: 550px;
+      margin: 22px 0 0;
+      color: #b7c3d8;
+      font-size: 15px;
+      line-height: 1.85;
+    }
+
+    .hero-lead strong {
+      color: #fff;
+      font-weight: 650;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 27px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 17px;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 9px 24px -12px rgba(9, 18, 34, 0.7);
+    }
+
+    .button.primary {
+      color: #102138;
+      background: #69e2c2;
+    }
+
+    .button.ghost {
+      color: #dce5f8;
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .button svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 22px;
+      margin-top: 30px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.11);
+    }
+
+    .hero-stat strong {
+      display: block;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .hero-stat span {
+      display: block;
+      margin-top: 4px;
+      color: #8fa0ba;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+    }
+
+    .loom {
+      position: relative;
+      align-self: stretch;
+      display: grid;
+      grid-template-columns: minmax(98px, 1fr) 48px minmax(105px, 1fr);
+      align-items: center;
+      gap: 10px;
+      padding: 42px 28px 34px 8px;
+      animation: hero-in 700ms 120ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .loom-panel {
+      position: relative;
+      padding: 13px;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .loom-label {
+      margin-bottom: 9px;
+      color: #9cadc7;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+    }
+
+    .loom-threads,
+    .loom-carriers {
+      display: grid;
+      gap: 7px;
+    }
+
+    .loom-threads span {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 28px;
+      padding: 0 8px;
+      color: #dce7ff;
+      background: rgba(111, 142, 255, 0.16);
+      border: 1px solid rgba(133, 158, 255, 0.18);
+      border-radius: 7px;
+      font-family: var(--font-mono);
+      font-size: 8px;
+    }
+
+    .loom-threads span::after {
+      width: 5px;
+      height: 5px;
+      content: "";
+      background: #6fe5c5;
+      border-radius: 50%;
+      box-shadow: 0 0 9px #6fe5c5;
+    }
+
+    .loom-scheduler {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      color: #a9bcff;
+      background: rgba(99, 128, 255, 0.13);
+      border: 1px solid rgba(125, 151, 255, 0.3);
+      border-radius: 50%;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      box-shadow: 0 0 0 7px rgba(100, 130, 255, 0.04);
+    }
+
+    .loom-scheduler::before,
+    .loom-scheduler::after {
+      position: absolute;
+      top: 50%;
+      width: 10px;
+      height: 1px;
+      content: "";
+      background: rgba(155, 175, 255, 0.45);
+    }
+
+    .loom-scheduler::before {
+      left: calc(50% - 34px);
+    }
+
+    .loom-scheduler::after {
+      right: calc(50% - 34px);
+    }
+
+    .loom-carriers span {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      min-height: 39px;
+      padding: 0 9px;
+      color: #d5deee;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 8px;
+    }
+
+    .loom-carriers b {
+      padding: 1px 5px;
+      color: #0c241f;
+      background: #63ddbc;
+      border-radius: 999px;
+      font-size: 7px;
+      font-weight: 700;
+    }
+
+    .loom-caption {
+      position: absolute;
+      right: 28px;
+      bottom: 19px;
+      color: #8393ad;
+      font-family: var(--font-mono);
+      font-size: 8px;
+      letter-spacing: 0.05em;
+    }
+
+    .lesson-body {
+      width: min(100%, var(--reading));
+      margin: 0 auto;
+    }
+
+    .source-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 18px 8px 0;
+      padding: 10px 0 0;
+      color: var(--ink-faint);
+      font-size: 11px;
+    }
+
+    .source-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .source-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      color: var(--ink-soft);
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      text-decoration: none;
+    }
+
+    .source-links a:hover {
+      color: var(--accent);
+      border-color: #c5d2ff;
+    }
+
+    .objectives,
+    .feature-map,
+    .concept-card,
+    .lab,
+    .quiz-card,
+    .next-chapter {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .objectives {
+      display: grid;
+      grid-template-columns: 160px minmax(0, 1fr);
+      gap: 22px;
+      margin-top: 34px;
+      padding: 24px;
+      border-left: 4px solid var(--accent);
+    }
+
+    .objectives-heading span {
+      display: block;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .objectives-heading strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    .objective-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .objective-list li {
+      position: relative;
+      padding: 0 0 0 23px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .objective-list li::before {
+      position: absolute;
+      top: 3px;
+      left: 0;
+      display: grid;
+      place-items: center;
+      width: 15px;
+      height: 15px;
+      content: "✓";
+      color: var(--mint);
+      background: var(--mint-soft);
+      border-radius: 50%;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .content-section {
+      padding-top: 68px;
+    }
+
+    .section-kicker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .section-kicker::after {
+      width: 34px;
+      height: 1px;
+      content: "";
+      background: linear-gradient(90deg, var(--accent), transparent);
+    }
+
+    .section-title {
+      position: relative;
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin: 0 0 20px;
+      padding: 0 0 15px 17px;
+      color: var(--ink);
+      border-bottom: 1px solid var(--line);
+      font-size: clamp(24px, 3vw, 31px);
+      font-weight: 780;
+      letter-spacing: -0.025em;
+      line-height: 1.35;
+    }
+
+    .section-title::before {
+      position: absolute;
+      top: 4px;
+      bottom: 16px;
+      left: 0;
+      width: 4px;
+      content: "";
+      background: linear-gradient(180deg, var(--accent), rgba(49, 88, 232, 0.12));
+      border-radius: 2px;
+    }
+
+    .section-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      align-self: center;
+      min-width: 45px;
+      height: 28px;
+      padding: 0 9px;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 7px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .lesson-body p {
+      margin: 0 0 18px;
+      color: #344158;
+      font-size: 15.5px;
+      line-height: 1.9;
+    }
+
+    .lesson-body p.lead {
+      color: var(--ink);
+      font-size: 17px;
+      line-height: 1.85;
+    }
+
+    .lesson-body strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    code.inline {
+      padding: 0.16em 0.42em;
+      color: #2f46a2;
+      background: #f0f3ff;
+      border: 1px solid #e1e7ff;
+      border-radius: 5px;
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      white-space: nowrap;
+    }
+
+    .feature-map {
+      margin-top: 20px;
+      overflow: hidden;
+    }
+
+    .feature-map-top {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 20px;
+      padding: 23px 24px;
+      background:
+        linear-gradient(135deg, rgba(49, 88, 232, 0.065), transparent 64%),
+        #fff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .feature-map-top h3 {
+      margin: 0 0 7px;
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    .feature-map-top p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 13px;
+      line-height: 1.75;
+    }
+
+    .jd-count {
+      align-self: center;
+      color: var(--accent);
+      font-family: var(--font-serif);
+      font-size: 54px;
+      font-weight: 700;
+      line-height: 1;
+      text-align: right;
+    }
+
+    .jd-count span {
+      display: block;
+      margin-top: 5px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+    }
+
+    .feature-groups {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--line);
+    }
+
+    .feature-group {
+      min-height: 126px;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .feature-group.active {
+      color: #fff;
+      background: var(--navy);
+    }
+
+    .feature-group small {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+    }
+
+    .feature-group.active small {
+      color: #89a7ff;
+    }
+
+    .feature-group strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .feature-group span {
+      color: var(--ink-soft);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .feature-group.active span {
+      color: #a9b8ce;
+    }
+
+    .jep-details {
+      border-top: 1px solid var(--line);
+    }
+
+    .jep-details summary {
+      position: relative;
+      padding: 15px 46px 15px 24px;
+      color: var(--ink-soft);
+      font-size: 12px;
+      font-weight: 650;
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .jep-details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .jep-details summary::after {
+      position: absolute;
+      top: 50%;
+      right: 23px;
+      content: "+";
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 18px;
+      transform: translateY(-50%);
+      transition: transform 180ms ease;
+    }
+
+    .jep-details[open] summary::after {
+      transform: translateY(-50%) rotate(45deg);
+    }
+
+    .jep-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      padding: 0 24px 22px;
+    }
+
+    .jep-item {
+      display: grid;
+      grid-template-columns: 41px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 10px;
+      color: var(--ink-soft);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 11px;
+      text-decoration: none;
+    }
+
+    .jep-item:hover {
+      color: var(--accent-dark);
+      background: var(--accent-soft);
+      border-color: #d1daff;
+    }
+
+    .jep-item b {
+      color: var(--ink);
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+
+    .jep-item em {
+      color: var(--ink-faint);
+      font-size: 8px;
+      font-style: normal;
+    }
+
+    .jep-item.current {
+      color: var(--accent-dark);
+      background: var(--accent-soft);
+      border-color: #d2dbff;
+    }
+
+    .learning-rail {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: 24px 0;
+    }
+
+    .concept-card {
+      position: relative;
+      overflow: hidden;
+      padding: 21px 20px 19px;
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    }
+
+    .concept-card:hover {
+      border-color: #c8d3e4;
+      box-shadow: var(--shadow-md);
+      transform: translateY(-3px);
+    }
+
+    .concept-card::after {
+      position: absolute;
+      top: -25px;
+      right: -20px;
+      width: 70px;
+      height: 70px;
+      content: "";
+      background: var(--accent-soft);
+      border-radius: 50%;
+      opacity: 0.72;
+    }
+
+    .concept-icon {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      width: 35px;
+      height: 35px;
+      margin-bottom: 17px;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .concept-card:nth-child(2) .concept-icon {
+      color: var(--mint);
+      background: var(--mint-soft);
+    }
+
+    .concept-card:nth-child(3) .concept-icon {
+      color: var(--amber);
+      background: var(--amber-soft);
+    }
+
+    .concept-card h3 {
+      position: relative;
+      z-index: 1;
+      margin: 0 0 7px;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .concept-card p {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 12.5px;
+      line-height: 1.7;
+    }
+
+    .definition {
+      position: relative;
+      margin: 26px 0;
+      padding: 24px 26px 24px 75px;
+      overflow: hidden;
+      color: #eef3ff;
+      background:
+        radial-gradient(circle at 100% 0, rgba(83, 118, 255, 0.38), transparent 65%),
+        var(--navy);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+    }
+
+    .definition::before {
+      position: absolute;
+      top: 22px;
+      left: 24px;
+      content: "“";
+      color: #7796ff;
+      font-family: var(--font-serif);
+      font-size: 54px;
+      line-height: 1;
+    }
+
+    .definition p {
+      margin: 0;
+      color: #dbe4f3;
+      font-size: 14px;
+      line-height: 1.85;
+    }
+
+    .definition strong {
+      color: #fff;
+    }
+
+    .definition-tag {
+      display: block;
+      margin-top: 10px;
+      color: #7f93b2;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.06em;
+    }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: minmax(155px, 1fr) 58px minmax(155px, 1fr) 58px minmax(128px, 0.82fr);
+      align-items: center;
+      gap: 8px;
+      margin: 26px 0;
+      padding: 26px 22px;
+      background:
+        linear-gradient(rgba(20, 32, 51, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(20, 32, 51, 0.025) 1px, transparent 1px),
+        var(--panel);
+      background-size: 24px 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+    }
+
+    .arch-column {
+      display: grid;
+      gap: 8px;
+    }
+
+    .arch-label {
+      margin-bottom: 4px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .vt-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+    }
+
+    .vt-dot {
+      height: 20px;
+      background: #e5ebff;
+      border: 1px solid #cbd7ff;
+      border-radius: 5px;
+    }
+
+    .vt-dot:nth-child(2n) {
+      background: #edf1ff;
+    }
+
+    .arch-flow {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 2px;
+      background: var(--line-strong);
+    }
+
+    .arch-flow::after {
+      position: absolute;
+      right: -1px;
+      width: 7px;
+      height: 7px;
+      content: "";
+      border-top: 1.5px solid var(--ink-faint);
+      border-right: 1.5px solid var(--ink-faint);
+      transform: rotate(45deg);
+    }
+
+    .arch-flow i {
+      position: absolute;
+      left: 3px;
+      width: 7px;
+      height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(49, 88, 232, 0.62);
+      animation: flow 2.3s linear infinite;
+    }
+
+    .arch-hub {
+      display: grid;
+      place-items: center;
+      min-height: 112px;
+      padding: 12px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 80% 0, rgba(114, 143, 255, 0.45), transparent 55%),
+        var(--navy);
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: var(--shadow-md);
+    }
+
+    .arch-hub b {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+
+    .arch-hub span {
+      display: block;
+      margin-top: 5px;
+      color: #a8b6ca;
+      font-size: 9px;
+      line-height: 1.55;
+    }
+
+    .carrier-block {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 33px;
+      padding: 7px 9px;
+      color: var(--ink-soft);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+    }
+
+    .carrier-block::before {
+      width: 6px;
+      height: 6px;
+      content: "";
+      background: var(--mint);
+      border-radius: 50%;
+    }
+
+    .core-stack {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 7px;
+    }
+
+    .core {
+      display: grid;
+      place-items: center;
+      min-height: 42px;
+      color: #fff;
+      background: #26364e;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+    }
+
+    .callout {
+      position: relative;
+      margin: 24px 0;
+      padding: 18px 20px 18px 54px;
+      border: 1px solid;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.78;
+    }
+
+    .callout::before {
+      position: absolute;
+      top: 17px;
+      left: 18px;
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .callout p {
+      margin: 0;
+      color: inherit;
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    .callout strong {
+      color: inherit;
+    }
+
+    .callout.insight {
+      color: #264b41;
+      background: linear-gradient(145deg, var(--mint-soft), #f7fffc);
+      border-color: #c3eadc;
+    }
+
+    .callout.insight::before {
+      content: "✓";
+      color: #fff;
+      background: var(--mint);
+    }
+
+    .callout.warning {
+      color: #624818;
+      background: linear-gradient(145deg, var(--amber-soft), #fffdf7);
+      border-color: #f1dcaf;
+    }
+
+    .callout.warning::before {
+      content: "!";
+      color: #fff;
+      background: var(--amber);
+    }
+
+    .callout.danger {
+      color: #67303a;
+      background: linear-gradient(145deg, var(--danger-soft), #fffafb);
+      border-color: #f0cbd0;
+    }
+
+    .callout.danger::before {
+      content: "×";
+      color: #fff;
+      background: var(--danger);
+    }
+
+    .comparison-wrap {
+      margin: 24px 0;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .comparison-table {
+      width: 100%;
+      min-width: 610px;
+      border-collapse: collapse;
+      background: #fff;
+      font-size: 12.5px;
+      line-height: 1.65;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .comparison-table th {
+      color: var(--ink);
+      background: var(--panel);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 0.02em;
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .comparison-table tbody tr:hover td {
+      background: #fbfcff;
+    }
+
+    .comparison-table code {
+      color: #344ca8;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .api-tabs {
+      margin: 26px 0 20px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tab-list {
+      display: flex;
+      gap: 2px;
+      padding: 7px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tab-button {
+      flex: 1;
+      min-height: 38px;
+      padding: 7px 10px;
+      color: var(--ink-soft);
+      background: transparent;
+      border: 0;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 650;
+      cursor: pointer;
+      transition: color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .tab-button:hover {
+      color: var(--ink);
+    }
+
+    .tab-button[aria-selected="true"] {
+      color: var(--accent-dark);
+      background: #fff;
+      box-shadow: 0 1px 5px rgba(20, 32, 51, 0.09);
+    }
+
+    .tab-panel {
+      padding: 20px;
+    }
+
+    .tab-panel[hidden] {
+      display: none;
+    }
+
+    .tab-panel h4 {
+      margin: 0 0 7px;
+      font-size: 14px;
+    }
+
+    .tab-panel p {
+      margin: 0 0 14px;
+      color: var(--ink-soft);
+      font-size: 12.5px;
+      line-height: 1.7;
+    }
+
+    .mini-code {
+      margin: 0;
+      padding: 14px 16px;
+      overflow-x: auto;
+      color: #dce6f8;
+      background: var(--code);
+      border-radius: 9px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.75;
+      white-space: pre;
+    }
+
+    .code-window {
+      position: relative;
+      margin: 24px 0;
+      overflow: hidden;
+      background: var(--code);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 14px;
+      box-shadow: 0 20px 44px -34px rgba(9, 17, 30, 0.72);
+    }
+
+    .code-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 42px;
+      padding: 0 12px 0 16px;
+      color: #92a1b9;
+      background: rgba(255, 255, 255, 0.035);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+    }
+
+    .code-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .window-dots i {
+      width: 6px;
+      height: 6px;
+      background: #47546c;
+      border-radius: 50%;
+    }
+
+    .window-dots i:first-child {
+      background: #f17b7b;
+    }
+
+    .window-dots i:nth-child(2) {
+      background: #e3b653;
+    }
+
+    .window-dots i:nth-child(3) {
+      background: #5dcc9e;
+    }
+
+    .copy-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 27px;
+      padding: 0 9px;
+      color: #aab7cc;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 6px;
+      font-family: var(--font-sans);
+      font-size: 9px;
+      cursor: pointer;
+    }
+
+    .copy-button:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .copy-button.copied {
+      color: #9bf0d6;
+      border-color: rgba(93, 204, 158, 0.35);
+    }
+
+    .code-window pre {
+      max-height: 580px;
+      margin: 0;
+      padding: 23px 24px 25px;
+      overflow: auto;
+      color: #d7e1f1;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.78;
+      tab-size: 4;
+    }
+
+    .code-window code {
+      font-family: inherit;
+    }
+
+    .tok-comment {
+      color: #73839c;
+    }
+
+    .tok-keyword {
+      color: #8faaff;
+    }
+
+    .tok-type {
+      color: #7ce0c0;
+    }
+
+    .tok-string {
+      color: #f3c277;
+    }
+
+    .tok-number {
+      color: #e49cb7;
+    }
+
+    .output-card {
+      margin: -6px 0 25px;
+      overflow: hidden;
+      background: #f7f9fc;
+      border: 1px dashed var(--line-strong);
+      border-radius: 10px;
+    }
+
+    .output-card header {
+      padding: 8px 15px;
+      color: var(--ink-faint);
+      border-bottom: 1px dashed var(--line);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+    }
+
+    .output-card pre {
+      margin: 0;
+      padding: 13px 15px;
+      overflow-x: auto;
+      color: #3f4d63;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      line-height: 1.75;
+    }
+
+    .run-steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      margin: 22px 0;
+      overflow: hidden;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .run-step {
+      min-height: 122px;
+      padding: 17px;
+      background: #fff;
+    }
+
+    .run-step b {
+      display: grid;
+      place-items: center;
+      width: 23px;
+      height: 23px;
+      margin-bottom: 12px;
+      color: #fff;
+      background: var(--accent);
+      border-radius: 7px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+    }
+
+    .run-step h4 {
+      margin: 0 0 5px;
+      font-size: 12.5px;
+    }
+
+    .run-step p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 11.5px;
+      line-height: 1.65;
+    }
+
+    .fit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin: 24px 0;
+    }
+
+    .fit-card {
+      padding: 20px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .fit-card h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 13px;
+      font-size: 14px;
+    }
+
+    .fit-card h3::before {
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      color: #fff;
+      background: var(--mint);
+      border-radius: 7px;
+      content: "✓";
+      font-size: 10px;
+    }
+
+    .fit-card.no h3::before {
+      content: "×";
+      background: var(--danger);
+    }
+
+    .fit-card ul {
+      display: grid;
+      gap: 7px;
+      margin: 0;
+      padding: 0;
+      color: var(--ink-soft);
+      font-size: 12.5px;
+      line-height: 1.65;
+      list-style: none;
+    }
+
+    .fit-card li {
+      position: relative;
+      padding-left: 15px;
+    }
+
+    .fit-card li::before {
+      position: absolute;
+      top: 0.72em;
+      left: 0;
+      width: 4px;
+      height: 4px;
+      content: "";
+      background: #9ba8ba;
+      border-radius: 50%;
+    }
+
+    .lab {
+      margin: 26px 0;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .lab-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 17px 20px;
+      color: #e8effa;
+      background:
+        radial-gradient(circle at 82% 0, rgba(62, 102, 234, 0.35), transparent 60%),
+        var(--navy);
+    }
+
+    .lab-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lab-title span {
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      color: #a9c0ff;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+    }
+
+    .lab-title strong {
+      display: block;
+      color: #fff;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .lab-title small {
+      display: block;
+      margin-top: 2px;
+      color: #8495af;
+      font-size: 9px;
+    }
+
+    .lab-controls {
+      display: flex;
+      gap: 7px;
+    }
+
+    .lab-controls button {
+      min-height: 32px;
+      padding: 0 11px;
+      color: #c7d5e9;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 7px;
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    .lab-controls button:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .lab-stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) 74px minmax(0, 1fr);
+      align-items: stretch;
+      gap: 14px;
+      padding: 23px 20px 18px;
+      background:
+        linear-gradient(rgba(20, 32, 51, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(20, 32, 51, 0.025) 1px, transparent 1px),
+        #fbfcfe;
+      background-size: 22px 22px;
+    }
+
+    .sim-label {
+      margin-bottom: 9px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.09em;
+    }
+
+    .queue-chips {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .queue-chip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      min-height: 33px;
+      padding: 5px 7px;
+      color: #53627b;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 8px;
+      transition: color 220ms ease, background 220ms ease, border-color 220ms ease, transform 220ms ease;
+    }
+
+    .queue-chip::after {
+      width: 5px;
+      height: 5px;
+      flex: 0 0 auto;
+      content: "";
+      background: #c0c9d6;
+      border-radius: 50%;
+    }
+
+    .queue-chip.mounted {
+      color: #e8efff;
+      background: #2e50c4;
+      border-color: #2e50c4;
+      transform: translateY(-2px);
+    }
+
+    .queue-chip.mounted::after {
+      background: #7eefcf;
+      box-shadow: 0 0 6px #7eefcf;
+    }
+
+    .queue-chip.io {
+      color: #8b5b0f;
+      background: var(--amber-soft);
+      border-color: #efd6a0;
+    }
+
+    .queue-chip.io::after {
+      background: var(--amber);
+    }
+
+    .mount-gate {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .mount-gate-ring {
+      display: grid;
+      place-items: center;
+      width: 49px;
+      height: 49px;
+      color: var(--accent);
+      background: #fff;
+      border: 1px solid #cad5f8;
+      border-radius: 50%;
+      box-shadow: 0 0 0 7px rgba(49, 88, 232, 0.055);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .carrier-stack {
+      display: grid;
+      gap: 7px;
+    }
+
+    .carrier-slot {
+      display: grid;
+      grid-template-columns: 78px minmax(0, 1fr);
+      align-items: center;
+      min-height: 43px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .carrier-slot strong {
+      align-self: stretch;
+      display: flex;
+      align-items: center;
+      padding: 0 9px;
+      color: var(--ink-faint);
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      font-family: var(--font-mono);
+      font-size: 8px;
+    }
+
+    .carrier-task {
+      padding: 0 10px;
+      overflow: hidden;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 8px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .carrier-slot.busy {
+      border-color: #b8c6f6;
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    .carrier-slot.busy .carrier-task {
+      color: var(--accent-dark);
+    }
+
+    .lab-status {
+      margin: 0;
+      padding: 12px 20px;
+      color: var(--ink-soft);
+      background: #fff;
+      border-top: 1px solid var(--line);
+      font-size: 10.5px;
+      line-height: 1.6;
+    }
+
+    .lab-status b {
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 9px;
+    }
+
+    .pitfall {
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr);
+      gap: 18px;
+      margin: 20px 0;
+      padding: 22px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .pitfall > * {
+      min-width: 0;
+    }
+
+    .pitfall-index {
+      color: var(--danger);
+      font-family: var(--font-serif);
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .pitfall-index span {
+      display: block;
+      margin-top: 6px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 8px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+    }
+
+    .pitfall h3 {
+      margin: 0 0 7px;
+      font-size: 15px;
+    }
+
+    .pitfall p {
+      margin: 0 0 12px;
+      color: var(--ink-soft);
+      font-size: 12.5px;
+      line-height: 1.75;
+    }
+
+    .pitfall .mini-code {
+      font-size: 10.5px;
+    }
+
+    .deep-dive {
+      margin: 24px 0;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .deep-dive summary {
+      position: relative;
+      padding: 16px 48px 16px 54px;
+      color: var(--ink);
+      border-bottom: 1px solid transparent;
+      font-size: 12.5px;
+      font-weight: 650;
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .deep-dive summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .deep-dive summary::before {
+      position: absolute;
+      top: 50%;
+      left: 18px;
+      display: grid;
+      place-items: center;
+      width: 23px;
+      height: 23px;
+      content: "i";
+      color: #fff;
+      background: var(--accent);
+      border-radius: 7px;
+      font-family: var(--font-serif);
+      font-size: 12px;
+      font-style: italic;
+      transform: translateY(-50%);
+    }
+
+    .deep-dive summary::after {
+      position: absolute;
+      top: 50%;
+      right: 19px;
+      content: "⌄";
+      color: var(--ink-faint);
+      transform: translateY(-55%);
+      transition: transform 180ms ease;
+    }
+
+    .deep-dive[open] summary {
+      border-bottom-color: var(--line);
+    }
+
+    .deep-dive[open] summary::after {
+      transform: translateY(-55%) rotate(180deg);
+    }
+
+    .deep-dive-body {
+      padding: 19px 22px 5px;
+      background: #fbfcfe;
+    }
+
+    .deep-dive-body p {
+      color: var(--ink-soft);
+      font-size: 12.5px;
+      line-height: 1.78;
+    }
+
+    .quiz {
+      display: grid;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .quiz-card {
+      padding: 20px;
+    }
+
+    .quiz-question {
+      display: flex;
+      gap: 10px;
+      margin: 0 0 15px !important;
+      color: var(--ink) !important;
+      font-size: 13.5px !important;
+      font-weight: 650;
+      line-height: 1.65 !important;
+    }
+
+    .quiz-question span {
+      display: grid;
+      flex: 0 0 auto;
+      place-items: center;
+      width: 23px;
+      height: 23px;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+    }
+
+    .quiz-options {
+      display: grid;
+      gap: 7px;
+    }
+
+    .quiz-option {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 9px;
+      align-items: start;
+      width: 100%;
+      padding: 10px 12px;
+      color: var(--ink-soft);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 11.5px;
+      line-height: 1.6;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .quiz-option:hover {
+      color: var(--ink);
+      background: #fff;
+      border-color: #c9d5e8;
+      transform: translateX(2px);
+    }
+
+    .quiz-option .marker {
+      display: grid;
+      place-items: center;
+      width: 17px;
+      height: 17px;
+      color: var(--ink-faint);
+      border: 1px solid var(--line-strong);
+      border-radius: 50%;
+      font-family: var(--font-mono);
+      font-size: 7px;
+    }
+
+    .quiz-option.correct {
+      color: #155e4b;
+      background: var(--mint-soft);
+      border-color: #acdfce;
+    }
+
+    .quiz-option.correct .marker {
+      color: #fff;
+      background: var(--mint);
+      border-color: var(--mint);
+    }
+
+    .quiz-option.incorrect {
+      color: #7f303c;
+      background: var(--danger-soft);
+      border-color: #efbec5;
+    }
+
+    .quiz-option.incorrect .marker {
+      color: #fff;
+      background: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .quiz-feedback {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 12px;
+      color: var(--ink-soft);
+      background: #f6f8fb;
+      border-left: 3px solid var(--accent);
+      font-size: 10.5px;
+      line-height: 1.7;
+    }
+
+    .quiz-feedback.show {
+      display: block;
+    }
+
+    .summary-box {
+      position: relative;
+      margin: 24px 0;
+      padding: 26px 26px 24px;
+      overflow: hidden;
+      color: #e8eef9;
+      background:
+        radial-gradient(circle at 100% 0, rgba(88, 127, 255, 0.38), transparent 58%),
+        var(--navy);
+      border-radius: 15px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .summary-box::before {
+      position: absolute;
+      right: 24px;
+      bottom: -34px;
+      content: "21";
+      color: rgba(255, 255, 255, 0.04);
+      font-family: var(--font-serif);
+      font-size: 130px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .summary-label {
+      color: #81a1ff;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+
+    .summary-box h3 {
+      position: relative;
+      margin: 7px 0 15px;
+      color: #fff;
+      font-size: 19px;
+    }
+
+    .summary-list {
+      position: relative;
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .summary-list li {
+      padding-left: 18px;
+      color: #b6c3d7;
+      font-size: 12.5px;
+      line-height: 1.7;
+    }
+
+    .summary-list li::before {
+      float: left;
+      margin-left: -18px;
+      content: "✓";
+      color: #6fe3c2;
+      font-weight: 800;
+    }
+
+    .chapter-footer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .next-chapter {
+      display: block;
+      min-height: 112px;
+      padding: 20px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .next-chapter.next {
+      text-align: right;
+    }
+
+    .next-chapter.disabled {
+      cursor: default;
+      opacity: 0.68;
+    }
+
+    .next-chapter small {
+      display: block;
+      margin-bottom: 9px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+    }
+
+    .next-chapter strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .next-chapter span {
+      display: block;
+      margin-top: 5px;
+      color: var(--ink-soft);
+      font-size: 11px;
+    }
+
+    .reading-footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 32px;
+      padding-top: 18px;
+      color: var(--ink-faint);
+      border-top: 1px solid var(--line);
+      font-size: 10px;
+    }
+
+    .reading-footer a {
+      color: var(--ink-soft);
+    }
+
+    .toc {
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 88px 18px 30px 8px;
+    }
+
+    .toc-heading {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px 9px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .toc-heading::before {
+      width: 15px;
+      height: 1px;
+      content: "";
+      background: var(--ink-faint);
+    }
+
+    .toc-list {
+      display: grid;
+      gap: 1px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .toc-link {
+      display: block;
+      padding: 7px 9px;
+      color: var(--ink-faint);
+      border-left: 2px solid transparent;
+      font-size: 10.5px;
+      line-height: 1.45;
+      text-decoration: none;
+      transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .toc-link:hover {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .toc-link.active {
+      color: var(--accent-dark);
+      background: rgba(255, 255, 255, 0.7);
+      border-left-color: var(--accent);
+      font-weight: 650;
+    }
+
+    .toc-links {
+      margin: auto 9px 0;
+      padding-top: 16px;
+      color: var(--ink-faint);
+      border-top: 1px solid var(--line);
+      font-size: 9px;
+      line-height: 1.7;
+    }
+
+    .toc-links a {
+      color: var(--ink-soft);
+    }
+
+    .menu-backdrop {
+      display: none;
+    }
+
+    [data-reveal] {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 600ms ease, transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    [data-reveal].revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes hero-in {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes flow {
+      from {
+        transform: translateX(0);
+      }
+      to {
+        transform: translateX(44px);
+      }
+    }
+
+    @media (max-width: 1360px) {
+      .app {
+        grid-template-columns: var(--sidebar) minmax(0, 1fr);
+      }
+
+      .toc {
+        display: none;
+      }
+    }
+
+    @media (max-width: 980px) {
+      :root {
+        --sidebar: 260px;
+      }
+
+      .app {
+        display: block;
+      }
+
+      .sidebar {
+        position: fixed;
+        z-index: 80;
+        left: 0;
+        transform: translateX(-102%);
+        box-shadow: 24px 0 60px rgba(10, 19, 36, 0.16);
+        transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      body.nav-open {
+        overflow: hidden;
+      }
+
+      body.nav-open .sidebar {
+        transform: translateX(0);
+      }
+
+      .menu-backdrop {
+        position: fixed;
+        z-index: 70;
+        inset: 0;
+        display: block;
+        visibility: hidden;
+        background: rgba(10, 19, 36, 0.36);
+        opacity: 0;
+        backdrop-filter: blur(2px);
+        transition: opacity 220ms ease, visibility 220ms ease;
+      }
+
+      body.nav-open .menu-backdrop {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      .menu-toggle {
+        display: grid;
+      }
+
+      .topbar {
+        padding: 0 22px;
+      }
+
+      .breadcrumbs .optional {
+        display: none;
+      }
+    }
+
+    @media (max-width: 780px) {
+      .article {
+        padding: 18px 16px 68px;
+      }
+
+      .topbar {
+        min-height: 59px;
+        padding: 0 16px;
+      }
+
+      .chapter-chip {
+        display: none;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        border-radius: 20px;
+      }
+
+      .hero-copy {
+        padding: 37px 28px 30px;
+      }
+
+      .hero h1 {
+        font-size: clamp(45px, 13vw, 62px);
+      }
+
+      .hero-lead {
+        font-size: 14px;
+      }
+
+      .hero-meta {
+        gap: 19px;
+      }
+
+      .loom {
+        grid-template-columns: minmax(95px, 1fr) 42px minmax(105px, 1fr);
+        padding: 0 28px 32px;
+      }
+
+      .loom-caption {
+        display: none;
+      }
+
+      .source-strip {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .objectives {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+
+      .objective-list {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-map-top {
+        grid-template-columns: 1fr;
+      }
+
+      .jd-count {
+        display: none;
+      }
+
+      .feature-groups {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .jep-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .learning-rail,
+      .run-steps,
+      .fit-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .architecture {
+        grid-template-columns: 1fr;
+        gap: 13px;
+      }
+
+      .arch-flow {
+        width: 2px;
+        height: 24px;
+        margin: 0 auto;
+        background: var(--line-strong);
+      }
+
+      .arch-flow::after {
+        top: auto;
+        right: -2px;
+        bottom: -1px;
+        transform: rotate(135deg);
+      }
+
+      .arch-flow i {
+        top: 2px;
+        left: -2.5px;
+        animation: flow-mobile 1.8s linear infinite;
+      }
+
+      .arch-hub {
+        min-height: 78px;
+      }
+
+      .lab-stage {
+        grid-template-columns: 1fr;
+      }
+
+      .mount-gate {
+        flex-direction: row;
+      }
+
+      .mount-gate-ring {
+        width: 38px;
+        height: 38px;
+      }
+
+      .pitfall {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+      }
+
+      .pitfall-index {
+        font-size: 28px;
+        overflow-wrap: anywhere;
+      }
+
+      .pitfall .mini-code {
+        max-width: 100%;
+      }
+
+      .chapter-footer {
+        grid-template-columns: 1fr;
+      }
+
+      .next-chapter.next {
+        text-align: left;
+      }
+
+      .section-title {
+        gap: 10px;
+        font-size: 24px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-copy {
+        padding: 32px 22px 25px;
+      }
+
+      .hero-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .hero-meta {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .loom {
+        padding-inline: 18px;
+      }
+
+      .feature-groups {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-group {
+        min-height: 0;
+      }
+
+      .tab-list {
+        flex-direction: column;
+      }
+
+      .tab-button {
+        text-align: left;
+      }
+
+      .lab-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .lab-controls {
+        width: 100%;
+      }
+
+      .lab-controls button {
+        flex: 1;
+      }
+
+      .queue-chips {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .reading-footer {
+        flex-direction: column;
+      }
+    }
+
+    @keyframes flow-mobile {
+      from {
+        transform: translateY(0);
+      }
+      to {
+        transform: translateY(18px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      [data-reveal] {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .sidebar,
+      .toc,
+      .topbar,
+      .reading-progress,
+      .menu-toggle,
+      .lab-controls,
+      .copy-button {
+        display: none !important;
+      }
+
+      .app {
+        display: block;
+      }
+
+      .article {
+        width: 100%;
+        padding: 0;
+      }
+
+      .hero {
+        color: #111;
+        background: #fff;
+        border: 1px solid #ccc;
+        box-shadow: none;
+      }
+
+      .hero-copy,
+      .hero-lead,
+      .hero-lead strong,
+      .hero h1,
+      .hero h1 em,
+      .hero-stat strong,
+      .hero-stat span {
+        color: #111;
+      }
+
+      .loom {
+        display: none;
+      }
+
+      .code-window,
+      .summary-box,
+      .definition {
+        break-inside: avoid;
+      }
+
+      [data-reveal] {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="reading-progress" id="readingProgress" aria-hidden="true"></div>
+  <div class="menu-backdrop" id="menuBackdrop" aria-hidden="true"></div>
+
+  <div class="app">
+    <aside class="sidebar" id="sidebar" aria-label="课程导航">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><span>21</span></div>
+        <div>
+          <p class="brand-name">JDK 新特性<br>实战手册</p>
+          <p class="brand-subtitle">From theory to runtime</p>
+        </div>
+      </div>
+
+      <p class="nav-caption">CONCURRENCY / 并发编程</p>
+      <nav class="course-nav">
+          <a class="chapter-link active" href="../virtualthread/" aria-current="page">
+            <span class="number">01</span>
+            <span class="label">虚拟线程</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../string-templates/">
+            <span class="number">02</span>
+            <span class="label">字符串模板</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../sequenced-collections/">
+            <span class="number">03</span>
+            <span class="label">顺序集合</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../generational-zgc/">
+            <span class="number">04</span>
+            <span class="label">分代 ZGC</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../record-patterns/">
+            <span class="number">05</span>
+            <span class="label">记录模式</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../pattern-matching-switch/">
+            <span class="number">06</span>
+            <span class="label">switch 模式匹配</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../foreign-function-memory/">
+            <span class="number">07</span>
+            <span class="label">外部函数与内存 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-patterns/">
+            <span class="number">08</span>
+            <span class="label">未命名模式与变量</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../unnamed-classes-main-methods/">
+            <span class="number">09</span>
+            <span class="label">未命名类与实例 main 方法</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../scoped-values/">
+            <span class="number">10</span>
+            <span class="label">作用域值</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../vector-api/">
+            <span class="number">11</span>
+            <span class="label">Vector API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../disallow-win32-port/">
+            <span class="number">12</span>
+            <span class="label">弃用 Windows 32 位 x86 端口</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../dynamic-agent-loading/">
+            <span class="number">13</span>
+            <span class="label">动态加载 Java Agent</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../key-encapsulation/">
+            <span class="number">14</span>
+            <span class="label">密钥封装机制 API</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+          <a class="chapter-link" href="../structured-concurrency/">
+            <span class="number">15</span>
+            <span class="label">结构化并发</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </a>
+      </nav>
+
+      <div class="sidebar-note">
+        <span class="sidebar-note-label">JDK 21 · LTS</span>
+        <strong>先建立并发心智模型，再动代码。</strong>
+        <p>本章沿官方 JEP 444 的脉络展开，从为什么需要，一直走到怎么排查。</p>
+        <div class="chapter-meter">
+          <div class="chapter-meter-track"><span></span></div>
+          <b>01 / 15</b>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="breadcrumbs">
+          <button class="menu-toggle" id="menuToggle" type="button" aria-label="打开课程导航" aria-controls="sidebar" aria-expanded="false"><span aria-hidden="true"></span></button>
+          <a href="../../../">YEWICK NOTES</a>
+          <span class="breadcrumb-divider optional">/</span>
+          <a href="../">JDK 21</a>
+          <span class="breadcrumb-divider">/</span>
+          <span>虚拟线程</span>
+        </div>
+        <div class="topbar-actions">
+          <span class="chapter-chip">CHAPTER 01</span>
+        </div>
+      </div>
+
+      <article class="article" id="top">
+        <header class="hero">
+          <div class="hero-copy">
+            <div class="hero-kicker">
+              <span>FINAL</span>
+              <span>JEP 444</span>
+              <span>JAVA 21</span>
+            </div>
+            <h1>虚拟线程<em>Virtual Threads</em></h1>
+            <p class="hero-lead">
+              让并发代码重新变得简单：保留“一请求一线程”的直觉，
+              同时用 <strong>M:N 调度</strong>把大量等待中的任务映射到少量操作系统线程上。
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="#why-threads">
+                开始本章
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h11M11 6l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </a>
+              <a class="button ghost" href="#first-code">直接运行示例</a>
+            </div>
+            <div class="hero-meta">
+              <div class="hero-stat">
+                <strong>2023.09</strong>
+                <span>JDK 21 正式发布</span>
+              </div>
+              <div class="hero-stat">
+                <strong>M : N</strong>
+                <span>多对多调度</span>
+              </div>
+              <div class="hero-stat">
+                <strong>Thread API</strong>
+                <span>迁移成本更低</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="loom" aria-label="一条调度关系示意：虚拟线程经 JVM 调度器映射到载体线程">
+            <div class="loom-panel">
+              <div class="loom-label">VIRTUAL THREADS</div>
+              <div class="loom-threads" aria-hidden="true">
+                <span>VT-001</span>
+                <span>VT-002</span>
+                <span>VT-003</span>
+                <span>VT-004</span>
+                <span>VT-005</span>
+                <span>VT-006</span>
+              </div>
+            </div>
+            <div class="loom-scheduler">JVM</div>
+            <div class="loom-panel">
+              <div class="loom-label">CARRIERS</div>
+              <div class="loom-carriers" aria-hidden="true">
+                <span><b>RUN</b> platform-1</span>
+                <span><b>RUN</b> platform-2</span>
+                <span><b>FREE</b> platform-3</span>
+                <span><b>FREE</b> platform-4</span>
+              </div>
+            </div>
+            <div class="loom-caption">mount ⟷ unmount · transparent to Java code</div>
+          </div>
+        </header>
+
+        <div class="source-strip">
+          <span>本节内容依据 JDK 21 官方发布页与 JEP 444 编写。</span>
+          <div class="source-links">
+            <a href="https://openjdk.org/projects/jdk/21/" target="_blank" rel="noreferrer">JDK 21 Project ↗</a>
+            <a href="https://openjdk.org/jeps/444" target="_blank" rel="noreferrer">JEP 444 ↗</a>
+            <a href="https://docs.oracle.com/en/java/javase/21/core/virtual-threads.html" target="_blank" rel="noreferrer">Java 21 Guide ↗</a>
+          </div>
+        </div>
+
+        <div class="lesson-body">
+          <section class="objectives" aria-labelledby="objectivesTitle" data-reveal>
+            <div class="objectives-heading">
+              <span>Learning Objectives</span>
+              <strong id="objectivesTitle">本章学习目标</strong>
+            </div>
+            <ul class="objective-list">
+              <li>理解平台线程、虚拟线程与载体线程的关系</li>
+              <li>用 JDK 21 API 写出可运行的并发示例</li>
+              <li>识别线程池、固定载体与错误迁移习惯</li>
+            </ul>
+          </section>
+
+          <section class="content-section" id="jdk21-map">
+            <div class="section-kicker">01 · Release Context</div>
+            <h2 class="section-title"><span class="section-number">01</span>先定位：虚拟线程在 JDK 21 的哪里？</h2>
+
+            <p class="lead">
+              JDK 21 于 2023 年 9 月正式发布，是两个长期支持版本 JDK 17 与后续版本之间的重要里程碑。
+              官方发布页共列出 15 个 JEP，覆盖语言、集合、并发、GC、互操作与安全等方向。
+            </p>
+
+            <div class="feature-map" data-reveal>
+              <div class="feature-map-top">
+                <div>
+                  <h3>不是“一个功能”，而是一组平台演进</h3>
+                  <p>学习 JDK 21 时，先区分正式特性、预览特性和孵化 API。虚拟线程属于正式 delivered 的核心并发能力。</p>
+                </div>
+                <div class="jd-count">21<span>15 JEPs · LTS</span></div>
+              </div>
+              <div class="feature-groups">
+                <div class="feature-group">
+                  <small>LANGUAGE</small>
+                  <strong>模式匹配</strong>
+                  <span>Record Patterns · switch</span>
+                </div>
+                <div class="feature-group active">
+                  <small>CONCURRENCY</small>
+                  <strong>虚拟线程</strong>
+                  <span>JEP 444 · 本章重点</span>
+                </div>
+                <div class="feature-group">
+                  <small>COLLECTIONS</small>
+                  <strong>顺序集合</strong>
+                  <span>统一的顺序访问视图</span>
+                </div>
+                <div class="feature-group">
+                  <small>RUNTIME</small>
+                  <strong>分代 ZGC</strong>
+                  <span>Young / Old 分代回收</span>
+                </div>
+              </div>
+              <details class="jep-details">
+                <summary>展开 JDK 21 官方 JEP 清单</summary>
+                <div class="jep-grid">
+                  <a class="jep-item" href="https://openjdk.org/jeps/430" target="_blank" rel="noreferrer"><b>430</b><span>String Templates</span><em>PREVIEW</em></a>
+                  <a class="jep-item" href="https://openjdk.org/jeps/431" target="_blank" rel="noreferrer"><b>431</b><span>Sequenced Collections</span><em>FINAL</em></a>
+                  <a class="jep-item" href="https://openjdk.org/jeps/439" target="_blank" rel="noreferrer"><b>439</b><span>Generational ZGC</span><em>FINAL</em></a>
+                  <a class="jep-item" href="https://openjdk.org/jeps/440" target="_blank" rel="noreferrer"><b>440</b><span>Record Patterns</span><em>FINAL</em></a>
+                  <a class="jep-item" href="https://openjdk.org/jeps/441" target="_blank" rel="noreferrer"><b>441</b><span>Pattern Matching for switch</span><em>FINAL</em></a>
+                  <a class="jep-item" href="https://openjdk.org/jeps/442" target="_blank" rel="noreferrer"><b>442</b><span>Foreign Function &amp; Memory API</span><em>PREVIEW</em></a>
+                  <a class="jep-item" href="https://openjdk.org/jeps/443" target="_blank" rel="noreferrer"><b>443</b><span>Unnamed Patterns &amp; Variables</span><em>PREVIEW</em></a>
+                  <a class="jep-item current" href="https://openjdk.org/jeps/444" target="_blank" rel="noreferrer"><b>444</b><span>Virtual Threads</span><em>CURRENT</em></a>
+                  <a class="jep-item" href="https://openjdk.org/jeps/445" target="_blank" rel="noreferrer"><b>445</b><span>Unnamed Classes &amp; Instance Main Methods</span><em>PREVIEW</em></a>
+                  <a class="jep-item" href="https://openjdk.org/jeps/446" target="_blank" rel="noreferrer"><b>446</b><span>Scoped Values</span><em>PREVIEW</em></a>
+                  <a class="jep-item" href="https://openjdk.org/jeps/448" target="_blank" rel="noreferrer"><b>448</b><span>Vector API</span><em>INCUBATOR</em></a>
+                  <a class="jep-item" href="https://openjdk.org/jeps/449" target="_blank" rel="noreferrer"><b>449</b><span>Deprecate Windows 32-bit x86 Port</span><em>REMOVE</em></a>
+                  <a class="jep-item" href="https://openjdk.org/jeps/451" target="_blank" rel="noreferrer"><b>451</b><span>Prepare to Disallow Dynamic Agent Loading</span><em>PREPARE</em></a>
+                  <a class="jep-item" href="https://openjdk.org/jeps/452" target="_blank" rel="noreferrer"><b>452</b><span>Key Encapsulation Mechanism API</span><em>FINAL</em></a>
+                  <a class="jep-item" href="https://openjdk.org/jeps/453" target="_blank" rel="noreferrer"><b>453</b><span>Structured Concurrency</span><em>PREVIEW</em></a>
+                </div>
+              </details>
+            </div>
+
+            <div class="callout insight">
+              <p><strong>本章的路线：</strong>JDK 21 总览 → 虚拟线程的目标 → M:N 调度 → API 与示例 → 适用边界 → 固定载体与诊断 → 当堂测验。</p>
+            </div>
+          </section>
+
+          <section class="content-section" id="why-threads">
+            <div class="section-kicker">02 · The Problem</div>
+            <h2 class="section-title"><span class="section-number">02</span>线程为什么“贵”？</h2>
+
+            <p class="lead">
+              传统 Java 线程通常是对操作系统线程的一层封装。它可以像普通对象一样使用，
+              但创建、调度与维护堆栈都需要系统资源，因此数量不能无限增长。
+            </p>
+
+            <p>
+              服务端经常采用“一请求一线程”模型：请求进入，分配一条线程；业务代码顺序执行，
+              遇到数据库、网络或文件 I/O 时等待。这种写法直观、可调试，却会在并发量很大时被线程数量卡住。
+            </p>
+
+            <div class="learning-rail">
+              <article class="concept-card">
+                <div class="concept-icon">01</div>
+                <h3>平台线程</h3>
+                <p>与底层操作系统线程绑定。适合数量相对稳定、长时间运行或需要稳定并行度的任务。</p>
+              </article>
+              <article class="concept-card">
+                <div class="concept-icon">02</div>
+                <h3>虚拟线程</h3>
+                <p>由 JDK 提供的轻量线程。阻塞时通常可卸载，数量可以远大于操作系统线程。</p>
+              </article>
+              <article class="concept-card">
+                <div class="concept-icon">03</div>
+                <h3>载体线程</h3>
+                <p>真正执行 Java 代码的平台线程。虚拟线程运行时挂载到载体，等待时可让出载体。</p>
+              </article>
+            </div>
+
+            <div class="definition">
+              <p>
+                虚拟线程是 <strong>java.lang.Thread 的一种实现</strong>，但它不会在整个生命周期内独占操作系统线程。
+                JDK 的调度器把大量虚拟线程映射到少量载体线程上，形成 <strong>M:N 调度</strong>。
+              </p>
+              <span class="definition-tag">JEP 444 · Description</span>
+            </div>
+
+            <div class="architecture" role="img" aria-label="大量虚拟线程经 JVM 调度器挂载到四条载体线程，再由 CPU 核心执行">
+              <div class="arch-column">
+                <div class="arch-label">Virtual threads</div>
+                <div class="vt-row"><i class="vt-dot"></i><i class="vt-dot"></i><i class="vt-dot"></i><i class="vt-dot"></i></div>
+                <div class="vt-row"><i class="vt-dot"></i><i class="vt-dot"></i><i class="vt-dot"></i><i class="vt-dot"></i></div>
+                <div class="vt-row"><i class="vt-dot"></i><i class="vt-dot"></i><i class="vt-dot"></i><i class="vt-dot"></i></div>
+                <div class="vt-row"><i class="vt-dot"></i><i class="vt-dot"></i><i class="vt-dot"></i><i class="vt-dot"></i></div>
+              </div>
+              <div class="arch-flow" aria-hidden="true"><i></i></div>
+              <div class="arch-hub">
+                <div><b>JVM SCHEDULER</b><span>mount / unmount<br>work-stealing · FIFO</span></div>
+              </div>
+              <div class="arch-flow" aria-hidden="true"><i></i></div>
+              <div class="arch-column">
+                <div class="arch-label">Carriers</div>
+                <div class="carrier-block">platform-1</div>
+                <div class="carrier-block">platform-2</div>
+                <div class="carrier-block">platform-3</div>
+                <div class="carrier-block">platform-4</div>
+              </div>
+            </div>
+
+            <div class="callout warning">
+              <p><strong>最容易理解错的一点：</strong>虚拟线程不是“执行更快的线程”。CPU 密集型任务增加线程数不会突破核心数量。它主要提升大量并发任务、且任务经常等待 I/O 时的吞吐量。</p>
+            </div>
+          </section>
+
+          <section class="content-section" id="scheduler-lab">
+            <div class="section-kicker">03 · Interactive Model</div>
+            <h2 class="section-title"><span class="section-number">03</span>把“挂载”和“卸载”看清楚</h2>
+
+            <p>
+              虚拟线程开始执行时，调度器把它挂载到一条载体线程上。遇到可卸载的阻塞操作后，
+              虚拟线程进入等待，载体被释放并继续运行其他虚拟线程。恢复条件满足后，它再回到调度队列。
+            </p>
+
+            <div class="lab" data-reveal>
+              <div class="lab-head">
+                <div class="lab-title">
+                  <span>LAB</span>
+                  <div>
+                    <strong>虚拟线程调度演示</strong>
+                    <small>概念演示，不代表性能基准</small>
+                  </div>
+                </div>
+                <div class="lab-controls">
+                  <button type="button" id="simToggle">暂停演示</button>
+                  <button type="button" id="simReset">重新开始</button>
+                </div>
+              </div>
+              <div class="lab-stage">
+                <div>
+                  <div class="sim-label">VIRTUAL THREADS / 12 TASKS</div>
+                  <div class="queue-chips" id="simQueue"></div>
+                </div>
+                <div class="mount-gate" aria-hidden="true">
+                  <div class="mount-gate-ring">M:N</div>
+                  <span>JVM<br>调度</span>
+                </div>
+                <div>
+                  <div class="sim-label">CARRIER THREADS / 4</div>
+                  <div class="carrier-stack" id="carrierStack">
+                    <div class="carrier-slot"><strong>carrier-1</strong><span class="carrier-task">空闲</span></div>
+                    <div class="carrier-slot"><strong>carrier-2</strong><span class="carrier-task">空闲</span></div>
+                    <div class="carrier-slot"><strong>carrier-3</strong><span class="carrier-task">空闲</span></div>
+                    <div class="carrier-slot"><strong>carrier-4</strong><span class="carrier-task">空闲</span></div>
+                  </div>
+                </div>
+              </div>
+              <p class="lab-status" id="simStatus" aria-live="polite"><b>准备：</b>12 条虚拟线程等待调度，4 条载体线程可以承载运行中的任务。</p>
+            </div>
+
+            <p>
+              在 JDK 21 中，虚拟线程调度器默认是一个 FIFO 模式的工作窃取
+              <code class="inline">ForkJoinPool</code>。载体数量默认等于可用处理器数；
+              它与 parallel stream 使用的 common pool 不是同一个池。
+            </p>
+
+            <details class="deep-dive">
+              <summary>深入一步：调度器参数在哪里调？</summary>
+              <div class="deep-dive-body">
+                <p>
+                  可以通过系统属性 <code class="inline">jdk.virtualThreadScheduler.parallelism</code>
+                  调整调度器并行度，通过 <code class="inline">jdk.virtualThreadScheduler.maxPoolSize</code>
+                  设置载体池的上限。教学与默认业务场景通常无需调整；只有在有测量依据和明确瓶颈时才修改。
+                </p>
+                <div class="code-window">
+                  <div class="code-toolbar">
+                    <span class="code-toolbar-left"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>TERMINAL</span></span>
+                    <button class="copy-button" type="button">复制</button>
+                  </div>
+                  <pre><code data-lang="bash">java \
+  -Djdk.virtualThreadScheduler.parallelism=8 \
+  -Djdk.virtualThreadScheduler.maxPoolSize=256 \
+  VirtualThreadDemo</code></pre>
+                </div>
+              </div>
+            </details>
+          </section>
+
+          <section class="content-section" id="api">
+            <div class="section-kicker">04 · JDK 21 API</div>
+            <h2 class="section-title"><span class="section-number">04</span>三种创建方式，优先选哪一种？</h2>
+
+            <p>
+              JEP 444 为 <code class="inline">Thread</code> 增加了虚拟线程创建 API，同时提供了与
+              <code class="inline">ExecutorService</code> 生态兼容的“一任务一线程”执行器。
+              课堂和实践都建议优先采用执行器写法，因为资源关闭与任务完成等待更清晰。
+            </p>
+
+            <div class="api-tabs">
+              <div class="tab-list" role="tablist" aria-label="虚拟线程创建方式">
+                <button class="tab-button" type="button" role="tab" aria-selected="true" aria-controls="panel-executor" id="tab-executor">Executor / 推荐</button>
+                <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-start" id="tab-start" tabindex="-1">直接启动</button>
+                <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-builder" id="tab-builder" tabindex="-1">Thread.Builder</button>
+              </div>
+              <div class="tab-panel" role="tabpanel" id="panel-executor" aria-labelledby="tab-executor">
+                <h4>一任务一线程，并自动等待全部任务结束</h4>
+                <p>适合服务端请求、批量 I/O 任务，通常是最容易迁移到虚拟线程的入口。</p>
+                <pre class="mini-code">try (var executor =
+         Executors.newVirtualThreadPerTaskExecutor()) {
+    executor.submit(() -&gt; doWork());
+} // close() 自动调用，并等待任务结束</pre>
+              </div>
+              <div class="tab-panel" role="tabpanel" id="panel-start" aria-labelledby="tab-start" hidden>
+                <h4>创建后立即启动一条虚拟线程</h4>
+                <p>适合演示或独立后台任务；涉及多条任务时仍需自行管理生命周期。</p>
+                <pre class="mini-code">Thread.startVirtualThread(() -&gt; {
+    System.out.println("running");
+});</pre>
+              </div>
+              <div class="tab-panel" role="tabpanel" id="panel-builder" aria-labelledby="tab-builder" hidden>
+                <h4>先配置名称，再启动</h4>
+                <p>适合需要线程名称、未启动状态或从同一个 Builder 批量创建线程的场景。</p>
+                <pre class="mini-code">Thread thread = Thread.ofVirtual()
+        .name("order-worker")
+        .start(() -&gt; doWork());</pre>
+              </div>
+            </div>
+
+            <div class="comparison-wrap">
+              <table class="comparison-table">
+                <thead>
+                  <tr>
+                    <th>对比项</th>
+                    <th>平台线程</th>
+                    <th>虚拟线程</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>资源关系</td>
+                    <td>通常与操作系统线程一一绑定</td>
+                    <td>按需挂载到载体线程，可大量存在</td>
+                  </tr>
+                  <tr>
+                    <td>典型写法</td>
+                    <td>线程池 + 固定并发度</td>
+                    <td>每个任务新建一条虚拟线程</td>
+                  </tr>
+                  <tr>
+                    <td>适合任务</td>
+                    <td>CPU 密集、长期运行任务</td>
+                    <td>大量阻塞等待的 I/O 密集任务</td>
+                  </tr>
+                  <tr>
+                    <td>主要价值</td>
+                    <td>复用昂贵的线程资源</td>
+                    <td>提高可扩展并发数，通常改善吞吐量</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="content-section" id="first-code">
+            <div class="section-kicker">05 · Hands-on</div>
+            <h2 class="section-title"><span class="section-number">05</span>第一个可运行示例</h2>
+
+            <p>
+              下面创建 100 个“模拟 I/O”任务，每条任务睡 300 毫秒。执行器会为每个提交的任务创建一条虚拟线程，
+              try-with-resources 结束时会自动关闭执行器并等待任务完成。
+            </p>
+
+            <div class="code-window">
+              <div class="code-toolbar">
+                <span class="code-toolbar-left"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>VirtualThreadDemo.java</span></span>
+                <button class="copy-button" type="button">复制代码</button>
+              </div>
+              <pre><code data-lang="java">import java.time.Duration;
+import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
+
+public class VirtualThreadDemo {
+    public static void main(String[] args) {
+        long start = System.nanoTime();
+
+        try (var executor =
+                 Executors.newVirtualThreadPerTaskExecutor()) {
+
+            IntStream.rangeClosed(1, 100).forEach(id -&gt;
+                executor.submit(() -&gt; {
+                    // 模拟一次 I/O 等待
+                    Thread.sleep(Duration.ofMillis(300));
+
+                    Thread current = Thread.currentThread();
+                    System.out.printf(
+                        "任务 %03d | %s | virtual=%s%n",
+                        id,
+                        current.getName(),
+                        current.isVirtual()
+                    );
+                    return id;
+                })
+            );
+        }
+
+        long elapsed = Duration.ofNanos(
+            System.nanoTime() - start
+        ).toMillis();
+        System.out.printf("全部完成，用时约 %d ms%n", elapsed);
+    }
+}</code></pre>
+            </div>
+
+            <div class="output-card">
+              <header>预期输出（任务顺序可能不同）</header>
+              <pre>任务 001 | virtual-1 | virtual=true
+任务 002 | virtual-2 | virtual=true
+...
+任务 100 | virtual-100 | virtual=true
+全部完成，用时约 300 ms</pre>
+            </div>
+
+            <div class="run-steps">
+              <div class="run-step">
+                <b>1</b>
+                <h4>保存文件</h4>
+                <p>将代码保存为 <code class="inline">VirtualThreadDemo.java</code>。</p>
+              </div>
+              <div class="run-step">
+                <b>2</b>
+                <h4>编译</h4>
+                <p>使用 JDK 21 执行 <code class="inline">javac VirtualThreadDemo.java</code>。</p>
+              </div>
+              <div class="run-step">
+                <b>3</b>
+                <h4>运行</h4>
+                <p>执行 <code class="inline">java VirtualThreadDemo</code>，观察线程名与 virtual 标记。</p>
+              </div>
+            </div>
+
+            <div class="callout insight">
+              <p><strong>观察重点：</strong>100 个任务都睡了 300 ms，但总耗时并不等于 30,000 ms。它们并不是靠“跑得更快”完成，而是在等待期间把载体线程让了出来。</p>
+            </div>
+          </section>
+
+          <section class="content-section" id="boundaries">
+            <div class="section-kicker">06 · Fit &amp; Limits</div>
+            <h2 class="section-title"><span class="section-number">06</span>什么时候适合，什么时候不适合？</h2>
+
+            <p class="lead">
+              判断标准不是“是不是新 API”，而是任务在做什么。虚拟线程擅长扩大等待型任务的并发规模，
+              并不能让 CPU 计算本身变快。
+            </p>
+
+            <div class="fit-grid">
+              <article class="fit-card">
+                <h3>适合：高并发、非 CPU 密集</h3>
+                <ul>
+                  <li>每个请求可以保留顺序、阻塞式代码</li>
+                  <li>任务大量等待网络、数据库或队列</li>
+                  <li>并发请求数量远大于 CPU 核心数量</li>
+                  <li>传统“线程池 + 回调/异步链”难以维护</li>
+                </ul>
+              </article>
+              <article class="fit-card no">
+                <h3>不适合：用线程数提升计算速度</h3>
+                <ul>
+                  <li>长时间占满 CPU 的排序、加密、压缩任务</li>
+                  <li>希望用虚拟线程池限制下游并发度</li>
+                  <li>依赖固定线程的昂贵 ThreadLocal 资源</li>
+                  <li>频繁在 synchronized 中执行长时间阻塞 I/O</li>
+                </ul>
+              </article>
+            </div>
+
+            <div class="callout danger">
+              <p><strong>不要池化虚拟线程。</strong>官方文档明确建议一条虚拟线程只服务一个任务。虚拟线程本身很便宜，池化会再次引入共享、生命周期和 ThreadLocal 污染问题。如果要限制对下游资源的并发访问，请使用 <code class="inline">Semaphore</code> 等并发控制工具。</p>
+            </div>
+
+            <h3>迁移时最常见的两个坑</h3>
+
+            <article class="pitfall">
+              <div class="pitfall-index">01<span>THREAD LOCAL</span></div>
+              <div>
+                <h3>把 ThreadLocal 当成连接缓存</h3>
+                <p>传统线程池会复用线程，因此有人把昂贵对象缓存在 ThreadLocal 中。虚拟线程通常一任务一条，照搬这种写法可能变成“每个任务创建一份昂贵资源”。</p>
+                <pre class="mini-code">// 不要假设虚拟线程会被复用
+static final ThreadLocal&lt;Connection&gt; CONNECTION =
+        ThreadLocal.withInitial(this::openConnection);</pre>
+              </div>
+            </article>
+
+            <article class="pitfall">
+              <div class="pitfall-index">02<span>PINNING</span></div>
+              <div>
+                <h3>JDK 21 中，注意 synchronized 固定载体</h3>
+                <p>JEP 444 说明，虚拟线程在 synchronized 块或方法中执行阻塞操作时可能被固定到载体线程。频繁且长时间的固定会妨碍扩展。对高频、可能阻塞 I/O 的热点代码，可考虑 ReentrantLock。</p>
+                <pre class="mini-code">// JDK 21：热点路径中谨慎使用
+synchronized (lock) {
+    remoteService.call(); // 可能阻塞
+}
+
+// 可改为
+lock.lock();
+try {
+    remoteService.call();
+} finally {
+    lock.unlock();
+}</pre>
+              </div>
+            </article>
+
+            <div class="callout warning">
+              <p><strong>版本提示：</strong>JDK 21 仍存在 synchronized 导致的固定载体问题。后续 JDK 版本通过 JEP 491 移除了这一限制，但本课程以 JDK 21 的行为为准，不能把更新版本的行为直接套回来。</p>
+            </div>
+          </section>
+
+          <section class="content-section" id="diagnostics">
+            <div class="section-kicker">07 · Observe</div>
+            <h2 class="section-title"><span class="section-number">07</span>在生产中如何观察与诊断？</h2>
+
+            <p>
+              虚拟线程仍然是 <code class="inline">Thread</code> 实例，但数量可能非常大。
+              JDK 21 提供了新的线程转储方式，让平台线程与虚拟线程分组展示；JFR 也能记录虚拟线程启动、结束和固定载体事件。
+            </p>
+
+            <div class="code-window">
+              <div class="code-toolbar">
+                <span class="code-toolbar-left"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>DIAGNOSTICS</span></span>
+                <button class="copy-button" type="button">复制命令</button>
+              </div>
+              <pre><code data-lang="bash"># 生成包含虚拟线程的新格式线程转储
+jcmd &lt;pid&gt; Thread.dump_to_file -format=json threads.json
+
+# 出现固定载体时输出简短栈信息
+java -Djdk.tracePinnedThreads=short VirtualThreadDemo</code></pre>
+            </div>
+
+            <div class="comparison-wrap">
+              <table class="comparison-table">
+                <thead>
+                  <tr>
+                    <th>观察目标</th>
+                    <th>可用手段</th>
+                    <th>关注点</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>线程状态</td>
+                    <td><code>jcmd Thread.dump_to_file</code></td>
+                    <td>虚拟线程是否长时间运行或等待</td>
+                  </tr>
+                  <tr>
+                    <td>固定载体</td>
+                    <td>JFR / <code>-Djdk.tracePinnedThreads</code></td>
+                    <td>阻塞时是否捕获了载体线程</td>
+                  </tr>
+                  <tr>
+                    <td>资源缓存</td>
+                    <td>代码审查 + 分配监控</td>
+                    <td>是否把昂贵对象错误放入 ThreadLocal</td>
+                  </tr>
+                  <tr>
+                    <td>吞吐变化</td>
+                    <td>真实负载压测与 JFR</td>
+                    <td>改善来自等待释放，而非单任务延迟</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="callout insight">
+              <p><strong>迁移策略：</strong>从小范围 I/O 请求链路开始，先确认任务类型，再替换执行器，随后压测吞吐、观察固定载体和 ThreadLocal 分配。不要为了“使用新特性”一次性替换全部线程模型。</p>
+            </div>
+          </section>
+
+          <section class="content-section" id="review">
+            <div class="section-kicker">08 · Check your understanding</div>
+            <h2 class="section-title"><span class="section-number">08</span>课堂检测：三分钟回顾</h2>
+
+            <p>选择你认为正确的答案。答错可以继续尝试，反馈区会解释关键概念。</p>
+
+            <div class="quiz">
+              <article class="quiz-card" data-answer="1" data-explanation="虚拟线程的核心价值是扩大等待型任务的并发规模，从而提升吞吐量；它并不会让单条任务的 CPU 计算更快。">
+                <p class="quiz-question"><span>Q1</span>虚拟线程最主要解决什么问题？</p>
+                <div class="quiz-options">
+                  <button class="quiz-option" type="button" data-option="0"><span class="marker">A</span><span>让所有 Java 代码执行速度提升数倍</span></button>
+                  <button class="quiz-option" type="button" data-option="1"><span class="marker">B</span><span>以较低线程资源成本承载大量等待型并发任务</span></button>
+                  <button class="quiz-option" type="button" data-option="2"><span class="marker">C</span><span>替代所有并行流和 CPU 并行计算框架</span></button>
+                </div>
+                <div class="quiz-feedback" aria-live="polite"></div>
+              </article>
+
+              <article class="quiz-card" data-answer="2" data-explanation="官方推荐按任务创建虚拟线程，newVirtualThreadPerTaskExecutor 正是这个模型。虚拟线程不应像平台线程那样池化。">
+                <p class="quiz-question"><span>Q2</span>服务端有一批高并发 I/O 任务，推荐哪种方式？</p>
+                <div class="quiz-options">
+                  <button class="quiz-option" type="button" data-option="0"><span class="marker">A</span><span>创建固定大小的虚拟线程池并长期复用</span></button>
+                  <button class="quiz-option" type="button" data-option="1"><span class="marker">B</span><span>每条请求创建一条平台线程</span></button>
+                  <button class="quiz-option" type="button" data-option="2"><span class="marker">C</span><span>每个任务提交给 newVirtualThreadPerTaskExecutor</span></button>
+                </div>
+                <div class="quiz-feedback" aria-live="polite"></div>
+              </article>
+
+              <article class="quiz-card" data-answer="0" data-explanation="在 JDK 21 中，synchronized 中的阻塞操作可能固定载体。热点路径可评估改用 ReentrantLock，并通过 JFR 或 tracePinnedThreads 验证。">
+                <p class="quiz-question"><span>Q3</span>JDK 21 中需要特别关注哪个固定载体场景？</p>
+                <div class="quiz-options">
+                  <button class="quiz-option" type="button" data-option="0"><span class="marker">A</span><span>synchronized 内的长时间阻塞操作</span></button>
+                  <button class="quiz-option" type="button" data-option="1"><span class="marker">B</span><span>普通内存字段的读取</span></button>
+                  <button class="quiz-option" type="button" data-option="2"><span class="marker">C</span><span>使用 StringBuilder 拼接短字符串</span></button>
+                </div>
+                <div class="quiz-feedback" aria-live="polite"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="content-section" id="summary">
+            <div class="section-kicker">09 · Summary</div>
+            <h2 class="section-title"><span class="section-number">09</span>本章小结</h2>
+
+            <div class="summary-box">
+              <span class="summary-label">TAKEAWAYS</span>
+              <h3>把“一个任务一条线程”重新变成可扩展的写法</h3>
+              <ul class="summary-list">
+                <li>虚拟线程由 JDK 实现，通过 M:N 调度映射到少量载体线程。</li>
+                <li>它的价值在吞吐量与编程模型，不在单任务执行速度。</li>
+                <li>优先使用 <code>Executors.newVirtualThreadPerTaskExecutor()</code>。</li>
+                <li>不要池化虚拟线程；需要限流时使用 Semaphore 等工具。</li>
+                <li>JDK 21 要警惕 synchronized 固定载体和 ThreadLocal 资源复制。</li>
+                <li>用真实负载、线程转储、JFR 和固定载体诊断验证迁移效果。</li>
+              </ul>
+            </div>
+
+            <div class="chapter-footer">
+              <a class="next-chapter" href="#jdk21-map">
+                <small>← BACK</small>
+                <strong>JDK 21 特性地图</strong>
+                <span>回到本教材总览</span>
+              </a>
+              <div class="next-chapter next disabled" aria-disabled="true">
+                <small>NEXT CHAPTER · 待续</small>
+                <strong>顺序集合</strong>
+                <span>下一节将结合 JEP 431 与示例展开</span>
+              </div>
+            </div>
+
+            <div class="reading-footer">
+              <span>教学页内容基于 OpenJDK JDK 21 官方资料整理，示例可按章节单独调整。</span>
+              <span>
+                <a href="https://openjdk.org/projects/jdk/21/" target="_blank" rel="noreferrer">JDK 21</a>
+                ·
+                <a href="https://openjdk.org/jeps/444" target="_blank" rel="noreferrer">JEP 444</a>
+              </span>
+            </div>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <aside class="toc" aria-label="本章目录">
+      <div class="toc-heading">On this page</div>
+      <nav>
+        <ol class="toc-list">
+          <li><a class="toc-link" href="#jdk21-map">01 · JDK 21 定位</a></li>
+          <li><a class="toc-link" href="#why-threads">02 · 线程为什么贵</a></li>
+          <li><a class="toc-link" href="#scheduler-lab">03 · 挂载与卸载</a></li>
+          <li><a class="toc-link" href="#api">04 · 创建虚拟线程</a></li>
+          <li><a class="toc-link" href="#first-code">05 · 可运行示例</a></li>
+          <li><a class="toc-link" href="#boundaries">06 · 适用边界</a></li>
+          <li><a class="toc-link" href="#diagnostics">07 · 观察与诊断</a></li>
+          <li><a class="toc-link" href="#review">08 · 课堂检测</a></li>
+          <li><a class="toc-link" href="#summary">09 · 本章小结</a></li>
+        </ol>
+      </nav>
+      <div class="toc-links">
+        官方资料<br>
+        <a href="https://openjdk.org/projects/jdk/21/" target="_blank" rel="noreferrer">JDK 21 Project</a><br>
+        <a href="https://openjdk.org/jeps/444" target="_blank" rel="noreferrer">JEP 444</a>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    (() => {
+      const body = document.body;
+      const menuToggle = document.getElementById("menuToggle");
+      const menuBackdrop = document.getElementById("menuBackdrop");
+      const sidebar = document.getElementById("sidebar");
+      const progress = document.getElementById("readingProgress");
+
+      const closeMenu = () => {
+        body.classList.remove("nav-open");
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "打开课程导航");
+      };
+
+      menuToggle.addEventListener("click", () => {
+        const isOpen = body.classList.toggle("nav-open");
+        menuToggle.setAttribute("aria-expanded", String(isOpen));
+        menuToggle.setAttribute("aria-label", isOpen ? "关闭课程导航" : "打开课程导航");
+      });
+      menuBackdrop.addEventListener("click", closeMenu);
+      sidebar.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeMenu));
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeMenu();
+      });
+
+      const updateProgress = () => {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const percentage = max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0;
+        progress.style.width = percentage + "%";
+      };
+      window.addEventListener("scroll", updateProgress, { passive: true });
+      updateProgress();
+
+      const revealItems = document.querySelectorAll("[data-reveal]");
+      if ("IntersectionObserver" in window) {
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add("revealed");
+            observer.unobserve(entry.target);
+          });
+        }, { threshold: 0.08, rootMargin: "0px 0px -36px" });
+        revealItems.forEach((item) => revealObserver.observe(item));
+      } else {
+        revealItems.forEach((item) => item.classList.add("revealed"));
+      }
+
+      const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+      const sections = tocLinks.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
+      if ("IntersectionObserver" in window) {
+        const sectionObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            tocLinks.forEach((link) => {
+              const isCurrent = link.getAttribute("href") === "#" + entry.target.id;
+              link.classList.toggle("active", isCurrent);
+              if (isCurrent) link.setAttribute("aria-current", "location");
+              else link.removeAttribute("aria-current");
+            });
+          });
+        }, { rootMargin: "-18% 0px -66% 0px", threshold: 0 });
+        sections.forEach((section) => sectionObserver.observe(section));
+      }
+
+      const escapeHtml = (value) => value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+
+      const highlight = (code) => {
+        const pattern = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|#[^\n]*)|("(?:\\.|[^"\\])*")|(\b(?:public|private|protected|class|interface|static|final|void|return|new|try|catch|finally|throw|throws|import|package|if|else|for|while|var|true|false|null|boolean|int|long|double|this)\b)|(\b(?:String|Thread|Duration|Executors|IntStream|Connection|ReentrantLock)\b)|(\b\d[\d_]*\b)/g;
+        let last = 0;
+        let result = "";
+        let match;
+        while ((match = pattern.exec(code)) !== null) {
+          result += escapeHtml(code.slice(last, match.index));
+          const value = escapeHtml(match[0]);
+          if (match[1]) result += `<span class="tok-comment">${value}</span>`;
+          else if (match[2]) result += `<span class="tok-string">${value}</span>`;
+          else if (match[3]) result += `<span class="tok-keyword">${value}</span>`;
+          else if (match[4]) result += `<span class="tok-type">${value}</span>`;
+          else result += `<span class="tok-number">${value}</span>`;
+          last = match.index + match[0].length;
+        }
+        return result + escapeHtml(code.slice(last));
+      };
+
+      document.querySelectorAll("pre code[data-lang]").forEach((block) => {
+        block.innerHTML = highlight(block.textContent);
+      });
+
+      const copyText = async (text) => {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+        const helper = document.createElement("textarea");
+        helper.value = text;
+        helper.style.position = "fixed";
+        helper.style.opacity = "0";
+        document.body.appendChild(helper);
+        helper.select();
+        document.execCommand("copy");
+        helper.remove();
+      };
+
+      document.querySelectorAll(".copy-button").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const code = button.closest(".code-window").querySelector("code");
+          const original = button.textContent;
+          try {
+            await copyText(code.textContent);
+            button.textContent = "已复制";
+            button.classList.add("copied");
+          } catch {
+            button.textContent = "复制失败";
+          }
+          window.setTimeout(() => {
+            button.textContent = original;
+            button.classList.remove("copied");
+          }, 1600);
+        });
+      });
+
+      const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+      const activateTab = (selectedTab) => {
+        tabs.forEach((tab) => {
+          const selected = tab === selectedTab;
+          tab.setAttribute("aria-selected", String(selected));
+          tab.tabIndex = selected ? 0 : -1;
+          document.getElementById(tab.getAttribute("aria-controls")).hidden = !selected;
+        });
+        selectedTab.focus();
+      };
+      tabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => activateTab(tab));
+        tab.addEventListener("keydown", (event) => {
+          if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+          event.preventDefault();
+          let nextIndex = index;
+          if (event.key === "ArrowRight") nextIndex = (index + 1) % tabs.length;
+          if (event.key === "ArrowLeft") nextIndex = (index - 1 + tabs.length) % tabs.length;
+          if (event.key === "Home") nextIndex = 0;
+          if (event.key === "End") nextIndex = tabs.length - 1;
+          activateTab(tabs[nextIndex]);
+        });
+      });
+
+      const simTaskCount = 12;
+      const simQueue = document.getElementById("simQueue");
+      const carrierStack = document.getElementById("carrierStack");
+      const simStatus = document.getElementById("simStatus");
+      const simToggle = document.getElementById("simToggle");
+      const simReset = document.getElementById("simReset");
+      let simRound = 0;
+      let simTimer = null;
+      let simRunning = true;
+
+      for (let index = 0; index < simTaskCount; index++) {
+        const chip = document.createElement("span");
+        chip.className = "queue-chip";
+        chip.textContent = "VT-" + String(index + 1).padStart(2, "0");
+        simQueue.appendChild(chip);
+      }
+
+      const simChips = Array.from(simQueue.children);
+      const carrierSlots = Array.from(carrierStack.children);
+
+      const renderSimulation = () => {
+        const offset = (simRound * carrierSlots.length) % simTaskCount;
+        simChips.forEach((chip, index) => {
+          chip.classList.remove("mounted", "io");
+          const relative = (index - offset + simTaskCount) % simTaskCount;
+          if (relative < carrierSlots.length) chip.classList.add("mounted");
+        });
+        carrierSlots.forEach((slot, index) => {
+          const taskIndex = (offset + index) % simTaskCount;
+          slot.classList.add("busy");
+          slot.querySelector(".carrier-task").textContent = simChips[taskIndex].textContent + " · I/O";
+        });
+        simStatus.innerHTML = `<b>第 ${simRound + 1} 轮：</b>4 条虚拟线程挂载到 4 条载体线程上；其余虚拟线程继续在调度队列中等待。`;
+      };
+
+      const stepSimulation = () => {
+        simRound += 1;
+        renderSimulation();
+      };
+
+      const startTimer = () => {
+        simTimer = window.setInterval(stepSimulation, 1500);
+      };
+
+      renderSimulation();
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        startTimer();
+      } else {
+        simRunning = false;
+        simToggle.textContent = "开始演示";
+      }
+
+      simToggle.addEventListener("click", () => {
+        simRunning = !simRunning;
+        if (simRunning) {
+          startTimer();
+          simToggle.textContent = "暂停演示";
+        } else {
+          window.clearInterval(simTimer);
+          simTimer = null;
+          simToggle.textContent = "继续演示";
+        }
+      });
+
+      simReset.addEventListener("click", () => {
+        window.clearInterval(simTimer);
+        simTimer = null;
+        simRound = 0;
+        renderSimulation();
+        simRunning = true;
+        simToggle.textContent = "暂停演示";
+        startTimer();
+      });
+
+      document.querySelectorAll(".quiz-card").forEach((card) => {
+        const feedback = card.querySelector(".quiz-feedback");
+        const options = Array.from(card.querySelectorAll(".quiz-option"));
+        options.forEach((option) => {
+          option.addEventListener("click", () => {
+            if (card.dataset.solved === "true") return;
+            const selected = Number(option.dataset.option);
+            const answer = Number(card.dataset.answer);
+            feedback.classList.add("show");
+            if (selected === answer) {
+              option.classList.add("correct");
+              feedback.textContent = "回答正确。" + card.dataset.explanation;
+              card.dataset.solved = "true";
+              options.forEach((item) => {
+                item.disabled = true;
+                item.style.cursor = "default";
+              });
+            } else {
+              option.classList.add("incorrect");
+              feedback.textContent = "再想一步：重点区分“执行更快”和“承载更多等待型任务”。";
+            }
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
