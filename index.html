@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Yewick 的工程笔记：Java、运行时与系统设计。">
+  <meta name="description" content="Yewick 的工程笔记：系统、Java、运行时与工程方法。">
   <title>Yewick Notes | Engineering Journal</title>
   <link rel="stylesheet" href="./assets/css/site.css">
   <script src="./assets/js/site.js" defer></script>
@@ -20,8 +20,9 @@
       </a>
       <nav class="site-nav" aria-label="主导航">
         <a class="active" href="./">首页</a>
-        <a href="./catalog/">Catalog</a>
-        <a class="nav-pill" href="./catalog/jdk21/">JDK 21</a>
+        <a href="#writing">文章</a>
+        <a href="./catalog/">技术博客</a>
+        <a class="nav-pill" href="https://github.com/yewick" target="_blank" rel="noreferrer">GitHub</a>
       </nav>
     </div>
   </header>
@@ -29,126 +30,146 @@
   <main class="site-main">
     <section class="home-hero">
       <div class="home-hero-copy">
-        <span class="home-eyebrow">Systems · Java · Runtime</span>
-        <h1>把复杂系统<br>讲清楚。<em>Notes from the runtime.</em></h1>
+        <span class="home-eyebrow">Field notes · Java · Systems</span>
+        <h1>在系统与<br>文字之间。<em>Notes for the long run.</em></h1>
         <p class="home-lead">
-          记录 Java 平台的演进、运行时机制与工程实践。
-          每个主题都从<strong>问题、原理、代码、边界</strong>出发，而不是只罗列新 API。
+          记录平台的演进、运行时的取舍和工程中的具体问题。
+          写作以<strong>可验证的代码</strong>和<strong>能复用的判断</strong>为终点。
         </p>
         <div class="home-actions">
-          <a class="home-button" href="./catalog/jdk21/">进入 JDK 21 教程</a>
-          <a class="home-button ghost" href="./catalog/">浏览全部目录</a>
+          <a class="home-button" href="./catalog/">开始阅读</a>
+          <a class="home-button ghost" href="#writing">查看最近文章</a>
         </div>
       </div>
-      <div class="home-terminal" aria-label="博客内容结构示意">
+      <div class="home-terminal" aria-label="技术博客结构示意">
         <div class="terminal-bar">
           <span class="terminal-dots" aria-hidden="true"><i></i><i></i><i></i></span>
           <span>yewick@notes</span>
         </div>
-        <pre><span class="term-muted">$</span> jdk --release 21 --list-features
+        <pre><span class="term-muted">$</span> cat writing-index.md
 
-<span class="term-key">catalog/</span>
-└── <span class="term-value">jdk21/</span>             15 JEPs
-    ├── virtual-threads   <span class="term-value">READ</span>
-    ├── sequenced-collections
-    ├── record-patterns
-    └── ...
+<span class="term-key">01</span>  catalog/
+    └── jdk21/              15 notes
 
-<span class="term-muted">mode</span>  teaching · source-backed
-<span class="term-muted">path</span>  problem → model → code → limits</pre>
+<span class="term-key">02</span>  long-form/
+    ├── runtime-design
+    ├── concurrency
+    └── engineering-notes
+
+<span class="term-muted">focus</span>  source → model → code → limits
+<span class="term-muted">state</span>  writing in public</pre>
       </div>
     </section>
 
-    <div class="home-strip" aria-label="当前内容概览">
+    <div class="home-strip" aria-label="技术博客概览">
       <div>
-        <strong>JDK 21 LTS</strong>
-        <span>完整覆盖官方 15 个 JEP</span>
+        <strong>JDK 21</strong>
+        <span>15 篇官方 JEP 教学笔记</span>
       </div>
       <div>
-        <strong>15 / 15</strong>
-        <span>教程章节已归档</span>
+        <strong>Source-backed</strong>
+        <span>每个结论都能回到规范</span>
       </div>
       <div>
-        <strong>1 Branch</strong>
-        <span>Catalog / Java / JDK 21</span>
+        <strong>Code-first</strong>
+        <span>示例优先通过 JDK 21 编译</span>
       </div>
     </div>
 
-    <section class="home-section" id="catalog">
-      <div class="section-heading">
-        <div>
-          <span class="section-heading-kicker">CATALOG BRANCHES</span>
-          <h2>按知识体系，而不是发布时间排列。</h2>
+    <section class="journal-layout" id="writing" aria-labelledby="writingTitle">
+      <div class="journal-feed">
+        <div class="journal-heading">
+          <div>
+            <span class="section-heading-kicker">RECENT WRITING</span>
+            <h2 id="writingTitle">最近文章</h2>
+          </div>
+          <a href="./catalog/">全部目录 →</a>
         </div>
-        <p>先理解平台为什么变化，再学习语法与 API；目录会持续扩展。</p>
-      </div>
-      <div class="catalog-branches">
-        <a class="branch-card featured" href="./catalog/jdk21/" data-reveal>
-          <span class="branch-label">JAVA / RUNTIME</span>
-          <h3>JDK 21 新特性<br>完整实战手册</h3>
-          <p>从虚拟线程、模式匹配到分代 ZGC，用同一套教学结构串起 JDK 21 的语言、并发与运行时演进。</p>
-          <div class="branch-meta">
-            <div class="branch-tags">
-              <span>15 JEP</span>
-              <span>LTS</span>
-              <span>Java 21</span>
-            </div>
-            <span class="branch-arrow" aria-hidden="true">→</span>
-          </div>
-        </a>
-        <a class="branch-card quiet" href="./catalog/" data-reveal>
-          <span class="branch-label">INDEX</span>
-          <h3>查看完整 Catalog</h3>
-          <p>从个人博客目录进入所有技术分支与学习路线。</p>
-          <div class="branch-meta">
-            <div class="branch-tags"><span>ONGOING</span></div>
-            <span class="branch-arrow" aria-hidden="true">↗</span>
-          </div>
-        </a>
-      </div>
-    </section>
 
-    <section class="home-section" id="recent">
-      <div class="section-heading">
-        <div>
-          <span class="section-heading-kicker">RECENTLY UPDATED</span>
-          <h2>最近整理</h2>
+        <a class="featured-post" href="./catalog/jdk21/virtualthread/" data-reveal>
+          <div class="featured-post-top">
+            <span class="post-label">JDK 21 / JEP 444</span>
+            <span class="latest-pill">LATEST</span>
+          </div>
+          <h3>虚拟线程：从 M:N 调度到生产诊断</h3>
+          <p>保留“一请求一线程”的写法，同时理解挂载、卸载、固定载体与迁移边界。</p>
+          <div class="featured-post-meta">
+            <span>11 min read</span>
+            <span>交互演示</span>
+            <span>12,000+ words</span>
+          </div>
+        </a>
+
+        <div class="post-list">
+          <a class="post-row" href="./catalog/jdk21/pattern-matching-switch/">
+            <span class="post-number">02</span>
+            <div>
+              <strong>switch 模式匹配：从类型判断到穷尽规则</strong>
+              <span>模式、守卫条件与 sealed 类型层级</span>
+            </div>
+            <span class="post-date">JDK 21</span>
+          </a>
+          <a class="post-row" href="./catalog/jdk21/sequenced-collections/">
+            <span class="post-number">03</span>
+            <div>
+              <strong>顺序集合：集合框架终于有了统一的顺序契约</strong>
+              <span>首尾访问、反向视图与顺序语义</span>
+            </div>
+            <span class="post-date">JDK 21</span>
+          </a>
+          <a class="post-row" href="./catalog/jdk21/generational-zgc/">
+            <span class="post-number">04</span>
+            <div>
+              <strong>分代 ZGC：分代假设如何进入低延迟回收</strong>
+              <span>年轻代、老年代与 JDK 21 启动参数</span>
+            </div>
+            <span class="post-date">JDK 21</span>
+          </a>
+          <a class="post-row" href="./catalog/jdk21/structured-concurrency/">
+            <span class="post-number">05</span>
+            <div>
+              <strong>结构化并发：让子任务留在父操作的边界内</strong>
+              <span>作用域、失败传播与虚拟线程</span>
+            </div>
+            <span class="post-date">JDK 21</span>
+          </a>
         </div>
-        <p>优先提供可运行示例、版本边界和常见误用。</p>
       </div>
-      <div class="recent-list" data-reveal>
-        <a class="recent-item" href="./catalog/jdk21/virtualthread/">
-          <span class="date">NOV 16, 2026</span>
-          <div>
-            <strong>虚拟线程：从 M:N 调度到生产诊断</strong>
-            <span>交互调度演示、JDK 21 API、固定载体与课堂检测。</span>
+
+      <aside class="journal-aside">
+        <section class="latest-commit" aria-labelledby="latestTitle">
+          <div class="latest-commit-head">
+            <span class="latest-pill">LATEST</span>
+            <span>repository commit</span>
           </div>
-          <span class="type">JDK 21</span>
-        </a>
-        <a class="recent-item" href="./catalog/jdk21/">
-          <span class="date">NOV 16, 2026</span>
-          <div>
-            <strong>JDK 21 特性地图：15 个 JEP 怎么学</strong>
-            <span>按语言、并发、运行时和平台能力组织。</span>
-          </div>
-          <span class="type">CATALOG</span>
-        </a>
-        <a class="recent-item" href="./catalog/">
-          <span class="date">NOV 16, 2026</span>
-          <div>
-            <strong>博客 Catalog 已建立</strong>
-            <span>技术内容以主题分支组织，便于长期维护。</span>
-          </div>
-          <span class="type">INDEX</span>
-        </a>
-      </div>
+          <h2 id="latestTitle">最新提交</h2>
+          <a id="latestCommitLink" href="https://github.com/yewick/yewick.github.io/commits/main" target="_blank" rel="noreferrer">
+            <strong id="latestCommitSubject">Build JDK 21 blog catalog</strong>
+            <span id="latestCommitMeta">yewick.github.io · main</span>
+          </a>
+        </section>
+
+        <section class="journal-note">
+          <span class="section-heading-kicker">CURRENT SERIES</span>
+          <h2>JDK 21 特性手册</h2>
+          <p>从虚拟线程到结构化并发，完整覆盖 JDK 21 的 15 个 JEP。</p>
+          <div class="series-line"><span>15 / 15</span><i></i></div>
+          <a href="./catalog/jdk21/">进入系列 →</a>
+        </section>
+
+        <section class="journal-note compact">
+          <span class="section-heading-kicker">COLOPHON</span>
+          <p>Static HTML, source-backed notes and examples validated against JDK 21.</p>
+          <a href="./catalog/">Browse the full catalog ↗</a>
+        </section>
+      </aside>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="site-footer-inner">
-      <span>© 2026 Yewick Notes · Built as a static GitHub Pages journal.</span>
-      <span><a href="https://openjdk.org/projects/jdk/21/" target="_blank" rel="noreferrer">OpenJDK JDK 21</a> · <a href="./catalog/">Catalog</a></span>
+      <span>© 2026 Yewick Notes · Engineering journal.</span>
+      <span><a href="./catalog/">Technical Blog</a> · <a href="https://github.com/yewick" target="_blank" rel="noreferrer">GitHub</a></span>
     </div>
   </footer>
 </body>

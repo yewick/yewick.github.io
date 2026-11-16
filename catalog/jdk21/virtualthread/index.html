@@ -206,7 +206,8 @@
       padding-right: 2px;
     }
 
-    .course-link {
+    .course-link,
+    .chapter-link {
       display: grid;
       grid-template-columns: 31px minmax(0, 1fr) auto;
       align-items: center;
@@ -219,36 +220,60 @@
       transition: color 180ms ease, background 180ms ease, border-color 180ms ease, transform 180ms ease;
     }
 
-    .course-link:hover {
+    .course-link:hover,
+    .chapter-link:hover {
       color: var(--ink);
       background: #fff;
       border-color: var(--line);
       transform: translateX(2px);
     }
 
-    .course-link.active {
+    .course-link.active,
+    .chapter-link.active {
       color: var(--accent-dark);
       background: var(--accent-soft);
       border-color: #dde4ff;
       box-shadow: inset 3px 0 0 var(--accent);
     }
 
-    .course-link .index {
+    .course-link .index,
+    .chapter-link .number {
       color: var(--ink-faint);
       font-family: var(--font-mono);
       font-size: 11px;
     }
 
-    .course-link.active .index {
+    .course-link.active .index,
+    .chapter-link.active .number {
       color: var(--accent);
     }
 
-    .course-link .title {
+    .course-link .title,
+    .chapter-link .label {
+      min-width: 0;
       overflow: hidden;
       font-size: 13px;
       font-weight: 650;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    .chapter-link {
+      min-height: 38px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+
+    .chapter-link .status-dot {
+      width: 5px;
+      height: 5px;
+      background: #aeb8c7;
+      border-radius: 50%;
+    }
+
+    .chapter-link.active .status-dot {
+      background: var(--mint);
     }
 
     .course-link .soon {

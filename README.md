@@ -2,6 +2,12 @@
 
 Yewick Notes 的静态工程博客，使用 GitHub Pages 发布。
 
+## 首页入口
+
+- 最近文章：展示技术博客的精选文章与更新入口
+- LATEST：读取本站仓库在 GitHub 上的最近一次提交
+- 技术博客：以 Catalog 组织的长期技术文档
+
 ## Catalog
 
 - `catalog/`：技术文档总目录
