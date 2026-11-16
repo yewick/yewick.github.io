@@ -5,8 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="JDK 21 预览一个更轻量的单文件程序模型：源文件可以不显式声明类，并允许实例 main 方法作为程序入口。">
   <title>未命名类与实例 main 方法 | JDK 21 新特性</title>
+  <script>
+    (() => {
+      const saved = localStorage.getItem("yewick-theme");
+      const preferred = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = saved || preferred;
+    })();
+  </script>
   <link rel="stylesheet" href="../../../assets/css/site.css">
   <link rel="stylesheet" href="../../../assets/css/course.css">
+  <link rel="stylesheet" href="../../../assets/css/chirpy.css">
   <script src="../../../assets/js/site.js" defer></script>
 </head>
 <body>

@@ -3,174 +3,202 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Yewick 的工程笔记：系统、Java、运行时与工程方法。">
-  <title>Yewick Notes | Engineering Journal</title>
+  <meta name="description" content="Yewick 的技术博客：Java、运行时、并发与工程方法。">
+  <title>Yewick Notes | Technical Blog</title>
+  <script>
+    (() => {
+      const saved = localStorage.getItem("yewick-theme");
+      const preferred = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = saved || preferred;
+    })();
+  </script>
   <link rel="stylesheet" href="./assets/css/site.css">
+  <link rel="stylesheet" href="./assets/css/chirpy.css">
   <script src="./assets/js/site.js" defer></script>
 </head>
-<body>
-  <header class="site-header">
-    <div class="site-header-inner">
-      <a class="site-brand" href="./" aria-label="Yewick Notes 首页">
-        <span class="site-brand-mark">Y</span>
-        <span class="site-brand-copy">
-          <strong>YEWICK NOTES</strong>
-          <span>ENGINEERING JOURNAL</span>
-        </span>
+<body class="chirpy-home">
+  <div class="chirpy-scrim" id="chirpyScrim" aria-hidden="true"></div>
+
+  <aside class="chirpy-sidebar" id="chirpySidebar" aria-label="站点导航">
+    <a class="chirpy-profile" href="./">
+      <span class="chirpy-avatar" aria-hidden="true">Y</span>
+      <h1>Yewick Notes</h1>
+      <p>A systems engineering journal.</p>
+    </a>
+
+    <nav class="chirpy-nav" aria-label="博客栏目">
+      <a class="active" href="./">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20h-5v-6H9v6H4v-9.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        HOME
       </a>
-      <nav class="site-nav" aria-label="主导航">
-        <a class="active" href="./">首页</a>
-        <a href="#writing">文章</a>
-        <a href="./catalog/">技术博客</a>
-        <a class="nav-pill" href="https://github.com/yewick" target="_blank" rel="noreferrer">GitHub</a>
-      </nav>
-    </div>
-  </header>
+      <a href="#categories">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 6h14M5 12h14M5 18h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        CATEGORIES
+      </a>
+      <a href="#tags">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m4 12 8-8 7 7-8 8H4v-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="9" cy="9" r="1.3" fill="currentColor"/></svg>
+        TAGS
+      </a>
+      <a href="#archive">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16v13H4V7Zm2-3h12v3M8 11h8M8 15h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        ARCHIVES
+      </a>
+      <a href="./catalog/">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5h6v6H5V5Zm8 0h6v6h-6V5ZM5 13h6v6H5v-6Zm8 0h6v6h-6v-6Z" stroke="currentColor" stroke-width="1.5"/></svg>
+        CATALOG
+      </a>
+    </nav>
 
-  <main class="site-main">
-    <section class="home-hero">
-      <div class="home-hero-copy">
-        <span class="home-eyebrow">Field notes · Java · Systems</span>
-        <h1>在系统与<br>文字之间。<em>Notes for the long run.</em></h1>
-        <p class="home-lead">
-          记录平台的演进、运行时的取舍和工程中的具体问题。
-          写作以<strong>可验证的代码</strong>和<strong>能复用的判断</strong>为终点。
-        </p>
-        <div class="home-actions">
-          <a class="home-button" href="./catalog/">开始阅读</a>
-          <a class="home-button ghost" href="#writing">查看最近文章</a>
-        </div>
-      </div>
-      <div class="home-terminal" aria-label="技术博客结构示意">
-        <div class="terminal-bar">
-          <span class="terminal-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span>yewick@notes</span>
-        </div>
-        <pre><span class="term-muted">$</span> cat writing-index.md
-
-<span class="term-key">01</span>  catalog/
-    └── jdk21/              15 notes
-
-<span class="term-key">02</span>  long-form/
-    ├── runtime-design
-    ├── concurrency
-    └── engineering-notes
-
-<span class="term-muted">focus</span>  source → model → code → limits
-<span class="term-muted">state</span>  writing in public</pre>
-      </div>
-    </section>
-
-    <div class="home-strip" aria-label="技术博客概览">
-      <div>
-        <strong>JDK 21</strong>
-        <span>15 篇官方 JEP 教学笔记</span>
-      </div>
-      <div>
-        <strong>Source-backed</strong>
-        <span>每个结论都能回到规范</span>
-      </div>
-      <div>
-        <strong>Code-first</strong>
-        <span>示例优先通过 JDK 21 编译</span>
-      </div>
+    <div class="chirpy-sidebar-actions">
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换深色模式">
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.7"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 15.4A8.2 8.2 0 0 1 8.6 4a8.4 8.4 0 1 0 11.4 11.4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+      </button>
+      <span style="color:var(--chirpy-muted);font-family:var(--site-mono);font-size:8px">MODE</span>
     </div>
 
-    <section class="journal-layout" id="writing" aria-labelledby="writingTitle">
-      <div class="journal-feed">
-        <div class="journal-heading">
-          <div>
-            <span class="section-heading-kicker">RECENT WRITING</span>
-            <h2 id="writingTitle">最近文章</h2>
-          </div>
-          <a href="./catalog/">全部目录 →</a>
-        </div>
+    <div class="chirpy-social">
+      <a href="https://github.com/yewick" target="_blank" rel="noreferrer" aria-label="GitHub">GH</a>
+      <a href="./feed.xml" aria-label="RSS">RSS</a>
+    </div>
+  </aside>
 
-        <a class="featured-post" href="./catalog/jdk21/virtualthread/" data-reveal>
-          <div class="featured-post-top">
-            <span class="post-label">JDK 21 / JEP 444</span>
-            <span class="latest-pill">LATEST</span>
+  <main class="chirpy-main">
+    <header class="chirpy-topbar">
+      <div style="display:flex;align-items:center;gap:11px">
+        <button class="chirpy-mobile-menu" id="chirpyMenu" type="button" aria-label="打开站点导航" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <span class="chirpy-topbar-title">Home</span>
+      </div>
+      <label class="chirpy-search">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <input id="articleSearch" type="search" placeholder="Search..." autocomplete="off" aria-label="搜索文章">
+      </label>
+    </header>
+
+    <div class="chirpy-board">
+      <section class="chirpy-feed" id="archive" aria-label="文章列表">
+        <a class="chirpy-post-card latest-post" href="./catalog/jdk21/virtualthread/" data-article-card data-search="虚拟线程 virtual threads jdk21 并发 m:n jep444">
+          <div class="chirpy-post-copy">
+            <h2>虚拟线程：从 M:N 调度到生产诊断</h2>
+            <p>保留“一请求一线程”的直观写法，同时理解挂载、卸载、载体线程、固定风险与迁移边界。</p>
+            <div class="chirpy-post-meta">
+              <span>Nov 16, 2026</span>
+              <span>11 min read</span>
+              <span>JDK 21</span>
+            </div>
           </div>
-          <h3>虚拟线程：从 M:N 调度到生产诊断</h3>
-          <p>保留“一请求一线程”的写法，同时理解挂载、卸载、固定载体与迁移边界。</p>
-          <div class="featured-post-meta">
-            <span>11 min read</span>
-            <span>交互演示</span>
-            <span>12,000+ words</span>
+          <div class="chirpy-post-tags">
+            <span class="chirpy-latest">LATEST</span>
+            <span>Concurrency</span>
+            <span>JEP 444</span>
           </div>
         </a>
 
-        <div class="post-list">
-          <a class="post-row" href="./catalog/jdk21/pattern-matching-switch/">
-            <span class="post-number">02</span>
-            <div>
-              <strong>switch 模式匹配：从类型判断到穷尽规则</strong>
-              <span>模式、守卫条件与 sealed 类型层级</span>
+        <a class="chirpy-post-card" href="./catalog/jdk21/pattern-matching-switch/" data-article-card data-search="switch 模式匹配 pattern matching jdk21 语言">
+          <div class="chirpy-post-copy">
+            <h2>switch 模式匹配：从类型判断到穷尽规则</h2>
+            <p>类型模式、记录模式、when 守卫条件，以及 sealed 类型带来的编译期穷尽性检查。</p>
+            <div class="chirpy-post-meta">
+              <span>Nov 16, 2026</span>
+              <span>8 min read</span>
+              <span>JDK 21</span>
             </div>
-            <span class="post-date">JDK 21</span>
-          </a>
-          <a class="post-row" href="./catalog/jdk21/sequenced-collections/">
-            <span class="post-number">03</span>
-            <div>
-              <strong>顺序集合：集合框架终于有了统一的顺序契约</strong>
-              <span>首尾访问、反向视图与顺序语义</span>
-            </div>
-            <span class="post-date">JDK 21</span>
-          </a>
-          <a class="post-row" href="./catalog/jdk21/generational-zgc/">
-            <span class="post-number">04</span>
-            <div>
-              <strong>分代 ZGC：分代假设如何进入低延迟回收</strong>
-              <span>年轻代、老年代与 JDK 21 启动参数</span>
-            </div>
-            <span class="post-date">JDK 21</span>
-          </a>
-          <a class="post-row" href="./catalog/jdk21/structured-concurrency/">
-            <span class="post-number">05</span>
-            <div>
-              <strong>结构化并发：让子任务留在父操作的边界内</strong>
-              <span>作用域、失败传播与虚拟线程</span>
-            </div>
-            <span class="post-date">JDK 21</span>
-          </a>
-        </div>
-      </div>
-
-      <aside class="journal-aside">
-        <section class="latest-commit" aria-labelledby="latestTitle">
-          <div class="latest-commit-head">
-            <span class="latest-pill">LATEST</span>
-            <span>repository commit</span>
           </div>
-          <h2 id="latestTitle">最新提交</h2>
-          <a id="latestCommitLink" href="https://github.com/yewick/yewick.github.io/commits/main" target="_blank" rel="noreferrer">
-            <strong id="latestCommitSubject">Build JDK 21 blog catalog</strong>
+          <div class="chirpy-post-tags"><span>Language</span><span>JEP 441</span></div>
+        </a>
+
+        <a class="chirpy-post-card" href="./catalog/jdk21/sequenced-collections/" data-article-card data-search="顺序集合 sequenced collections jdk21 list map">
+          <div class="chirpy-post-copy">
+            <h2>顺序集合：统一的顺序访问契约</h2>
+            <p>从首尾访问和反向视图出发，理解 SequencedCollection、SequencedSet 与 SequencedMap。</p>
+            <div class="chirpy-post-meta">
+              <span>Nov 16, 2026</span>
+              <span>7 min read</span>
+              <span>JDK 21</span>
+            </div>
+          </div>
+          <div class="chirpy-post-tags"><span>Collections</span><span>JEP 431</span></div>
+        </a>
+
+        <a class="chirpy-post-card" href="./catalog/jdk21/generational-zgc/" data-article-card data-search="分代 zgc generational gc jdk21 runtime">
+          <div class="chirpy-post-copy">
+            <h2>分代 ZGC：低延迟回收与分代假设</h2>
+            <p>年轻代、老年代、启动参数，以及为什么 GC 方案必须由日志与真实负载决定。</p>
+            <div class="chirpy-post-meta">
+              <span>Nov 16, 2026</span>
+              <span>6 min read</span>
+              <span>JDK 21</span>
+            </div>
+          </div>
+          <div class="chirpy-post-tags"><span>Runtime</span><span>JEP 439</span></div>
+        </a>
+
+        <a class="chirpy-post-card" href="./catalog/jdk21/structured-concurrency/" data-article-card data-search="结构化并发 structured concurrency jdk21 虚拟线程">
+          <div class="chirpy-post-copy">
+            <h2>结构化并发：让子任务留在父操作边界内</h2>
+            <p>使用 StructuredTaskScope 统一管理并发子任务、失败传播、取消与结果汇合。</p>
+            <div class="chirpy-post-meta">
+              <span>Nov 16, 2026</span>
+              <span>9 min read</span>
+              <span>JDK 21</span>
+            </div>
+          </div>
+          <div class="chirpy-post-tags"><span>Concurrency</span><span>JEP 453</span></div>
+        </a>
+
+        <div class="chirpy-empty" id="searchEmpty">没有匹配的文章，试试更短的关键词。</div>
+      </section>
+
+      <aside class="chirpy-panel" aria-label="文章信息">
+        <section class="chirpy-panel-section" id="categories">
+          <h2>Categories</h2>
+          <ul class="chirpy-panel-list">
+            <li><a href="./catalog/jdk21/">Java / JDK 21（15）</a></li>
+            <li><a href="#archive">Concurrency（3）</a></li>
+            <li><a href="#archive">Language（5）</a></li>
+            <li><a href="#archive">Runtime &amp; Platform（7）</a></li>
+          </ul>
+        </section>
+
+        <section class="chirpy-panel-section" id="tags">
+          <h2>Trending Tags</h2>
+          <div class="tag-cloud">
+            <a href="#archive">JDK 21</a>
+            <a href="#archive">Virtual Threads</a>
+            <a href="#archive">Pattern Matching</a>
+            <a href="#archive">ZGC</a>
+            <a href="#archive">Java</a>
+          </div>
+        </section>
+
+        <section class="chirpy-panel-section">
+          <h2>Recent Update</h2>
+          <ul class="chirpy-panel-list">
+            <li><a href="./catalog/jdk21/virtualthread/">Virtual Threads</a></li>
+            <li><a href="./catalog/jdk21/">JDK 21 Feature Map</a></li>
+            <li><a href="./catalog/">Catalog Index</a></li>
+          </ul>
+        </section>
+
+        <section class="chirpy-panel-section">
+          <h2>Latest Commit</h2>
+          <div class="latest-commit-box">
+            <small>REPOSITORY ACTIVITY</small>
+            <a id="latestCommitLink" href="https://github.com/yewick/yewick.github.io/commits/main" target="_blank" rel="noreferrer">
+              <strong id="latestCommitSubject" style="display:block;color:var(--chirpy-ink);font-size:10px;line-height:1.55">Build JDK 21 blog catalog</strong>
+            </a>
             <span id="latestCommitMeta">yewick.github.io · main</span>
-          </a>
-        </section>
-
-        <section class="journal-note">
-          <span class="section-heading-kicker">CURRENT SERIES</span>
-          <h2>JDK 21 特性手册</h2>
-          <p>从虚拟线程到结构化并发，完整覆盖 JDK 21 的 15 个 JEP。</p>
-          <div class="series-line"><span>15 / 15</span><i></i></div>
-          <a href="./catalog/jdk21/">进入系列 →</a>
-        </section>
-
-        <section class="journal-note compact">
-          <span class="section-heading-kicker">COLOPHON</span>
-          <p>Static HTML, source-backed notes and examples validated against JDK 21.</p>
-          <a href="./catalog/">Browse the full catalog ↗</a>
+          </div>
         </section>
       </aside>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="site-footer-inner">
-      <span>© 2026 Yewick Notes · Engineering journal.</span>
-      <span><a href="./catalog/">Technical Blog</a> · <a href="https://github.com/yewick" target="_blank" rel="noreferrer">GitHub</a></span>
     </div>
-  </footer>
+
+    <footer class="chirpy-footer">
+      <span>© 2026 Yewick Notes. Some rights reserved.</span>
+      <span><a href="./catalog/">Catalog</a> · <a href="https://github.com/yewick" target="_blank" rel="noreferrer">GitHub</a></span>
+    </footer>
+  </main>
 </body>
 </html>

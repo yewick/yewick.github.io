@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="JDK 21 的 15 个官方 JEP 教程目录。">
   <title>JDK 21 特性地图 | Yewick Notes</title>
+  <script>
+    (() => {
+      const saved = localStorage.getItem("yewick-theme");
+      const preferred = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = saved || preferred;
+    })();
+  </script>
   <link rel="stylesheet" href="../../assets/css/site.css">
   <style>
     .jdk-hero {
@@ -119,6 +126,7 @@
       .jep-card { min-height:190px; }
     }
   </style>
+  <link rel="stylesheet" href="../../assets/css/chirpy.css">
   <script src="../../assets/js/site.js" defer></script>
 </head>
 <body>

@@ -5,8 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="switch 现在可以使用类型模式、记录模式和守卫条件 when。对于 sealed 类型，编译器还能检查分支是否穷尽。">
   <title>switch 模式匹配 | JDK 21 新特性</title>
+  <script>
+    (() => {
+      const saved = localStorage.getItem("yewick-theme");
+      const preferred = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = saved || preferred;
+    })();
+  </script>
   <link rel="stylesheet" href="../../../assets/css/site.css">
   <link rel="stylesheet" href="../../../assets/css/course.css">
+  <link rel="stylesheet" href="../../../assets/css/chirpy.css">
   <script src="../../../assets/js/site.js" defer></script>
 </head>
 <body>

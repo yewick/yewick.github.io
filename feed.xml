@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Yewick Notes</title>
+  <id>https://yewick.github.io/</id>
+  <link href="https://yewick.github.io/feed.xml" rel="self"/>
+  <link href="https://yewick.github.io/"/>
+  <updated>2026-11-16T00:00:00+08:00</updated>
+  <author>
+    <name>Yewick</name>
+  </author>
+  <entry>
+    <title>虚拟线程：从 M:N 调度到生产诊断</title>
+    <id>https://yewick.github.io/catalog/jdk21/virtualthread/</id>
+    <link href="https://yewick.github.io/catalog/jdk21/virtualthread/"/>
+    <updated>2026-11-16T00:00:00+08:00</updated>
+    <summary>理解虚拟线程、载体线程、M:N 调度、固定风险与生产诊断。</summary>
+  </entry>
+  <entry>
+    <title>switch 模式匹配：从类型判断到穷尽规则</title>
+    <id>https://yewick.github.io/catalog/jdk21/pattern-matching-switch/</id>
+    <link href="https://yewick.github.io/catalog/jdk21/pattern-matching-switch/"/>
+    <updated>2026-11-16T00:00:00+08:00</updated>
+    <summary>理解类型模式、记录模式、when 守卫条件与 sealed 穷尽性检查。</summary>
+  </entry>
+  <entry>
+    <title>顺序集合：统一的顺序访问契约</title>
+    <id>https://yewick.github.io/catalog/jdk21/sequenced-collections/</id>
+    <link href="https://yewick.github.io/catalog/jdk21/sequenced-collections/"/>
+    <updated>2026-11-16T00:00:00+08:00</updated>
+    <summary>理解首尾访问、反向视图与 JDK 21 的顺序集合接口。</summary>
+  </entry>
+</feed>
