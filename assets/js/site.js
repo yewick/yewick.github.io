@@ -1,4 +1,4 @@
-(() => {
+(async () => {
   const progress = document.querySelector(".reading-progress");
   const updateProgress = () => {
     if (!progress) return;
@@ -118,4 +118,54 @@
       }, 1500);
     });
   });
+
+  const latestCommitSubject = document.getElementById("latestCommitSubject");
+  const latestCommitMeta = document.getElementById("latestCommitMeta");
+  const latestCommitLink = document.getElementById("latestCommitLink");
+
+  if (latestCommitSubject && latestCommitMeta && latestCommitLink) {
+    const cacheKey = "yewick-latest-commit-v1";
+    const renderLatestCommit = (commit) => {
+      if (!commit?.subject) return;
+      latestCommitSubject.textContent = commit.subject;
+      latestCommitMeta.textContent = `yewick.github.io · ${commit.dateLabel || "main"}`;
+      if (commit.url?.startsWith("https://github.com/yewick/")) {
+        latestCommitLink.href = commit.url;
+      }
+    };
+
+    try {
+      const cached = JSON.parse(sessionStorage.getItem(cacheKey) || "null");
+      if (cached && Date.now() - cached.savedAt < 10 * 60 * 1000) {
+        renderLatestCommit(cached);
+      } else {
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 6000);
+        const response = await fetch(
+          "https://api.github.com/repos/yewick/yewick.github.io/commits/main",
+          {
+            signal: controller.signal,
+            headers: { Accept: "application/vnd.github+json" }
+          }
+        );
+        window.clearTimeout(timeout);
+        if (!response.ok) throw new Error("GitHub API unavailable");
+        const data = await response.json();
+        const commit = {
+          subject: String(data.commit?.message || "").split("\n")[0],
+          dateLabel: new Intl.DateTimeFormat("zh-CN", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+          }).format(new Date(data.commit?.author?.date || Date.now())),
+          url: data.html_url,
+          savedAt: Date.now()
+        };
+        sessionStorage.setItem(cacheKey, JSON.stringify(commit));
+        renderLatestCommit(commit);
+      }
+    } catch {
+      latestCommitMeta.textContent = "yewick.github.io · main";
+    }
+  }
 })();
